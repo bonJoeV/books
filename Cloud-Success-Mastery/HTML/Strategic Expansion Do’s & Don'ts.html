@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Table: Strategic Expansion Do's & Don'ts</title>
+<style>
+    body { /* Basic body style - needed for background reset */
+        margin: 0;
+        padding: 20px;
+        background-color: #ffffff; /* Default background */
+        font-family: sans-serif; /* Keep it simple */
+    }
+
+    /* Wrapper for the action button above the box */
+    .action-wrapper {
+        text-align: center; /* Center the button */
+        margin-bottom: 15px; /* Space below button */
+    }
+
+    /* Download Button Styling */
+    .download-button {
+        /* Standard small button style */
+        padding: 5px 10px;
+        background-color: #eee;
+        color: #333;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.8em;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        transition: background-color 0.3s ease, border-color 0.3s ease; /* Smooth hover */
+    }
+    .download-button:hover {
+        background-color: #ddd;
+        border-color: #bbb;
+    }
+
+    /* Callout Box Styling - Container for the table */
+    .callout-box {
+        border: 2px solid #f0f0f0; /* Light border */
+        background-color: #f9f9f9; /* Light background */
+        padding: 10px 10px 10px 10px; /* Consistent padding */
+        margin: 0 auto; /* Center horizontally */
+        border-radius: 8px; /* Soft corners */
+        font-family: sans-serif; /* Match body */
+        max-width: 800px; /* Keep width reasonable */
+    }
+    .callout-box h3 {
+        /* Title inside the box */
+        margin-top: 0; /* Remove default margin */
+        color: #333;
+        text-align: center; /* Center the title */
+        margin-bottom: 15px; /* Space below title, above table */
+    }
+    /* Add the pin automatically to the title via CSS */
+    .callout-box h3::before {
+         /* Pin it! Expansion needs careful thought. */
+        content: "📌 ";
+        /* If targeting by ID: #callout-title::before */
+    }
+    .expansion-dos-donts-table { /* Specific class name */
+        /* Table styling - keep it clean */
+        width: 100%;
+        border-collapse: collapse; /* Clean lines */
+        margin-bottom: 0; /* Table is last element, remove bottom margin */
+    }
+    .expansion-dos-donts-table th,
+    .expansion-dos-donts-table td {
+        /* Cell styling - padding for space, border for structure */
+        border: 1px solid #ddd;
+        padding: 10px;
+        text-align: left;
+        vertical-align: top; /* Align top looks better if text wraps */
+        width: 50%; /* Aim for equal columns */
+    }
+    .expansion-dos-donts-table th {
+        /* Header styling - make columns distinct */
+        background-color: #e9e9e9;
+        font-weight: bold;
+    }
+    /* Optional: Zebra striping improves readability */
+    .expansion-dos-donts-table tr:nth-child(even) {
+        background-color: #fdfdfd; /* Subtle striping */
+    }
+</style>
+</head>
+<body>
+
+<div class="action-wrapper">
+    <button id="download-table" class="download-button">Download Table PNG</button>
+</div>
+
+<div class="callout-box" id="downloadable-content">
+    <h3>📌 Strategic Expansion Do's & Don'ts</h3>
+    <table class="expansion-dos-donts-table">
+        <thead>
+            <tr>
+                <th>Do:</th> <th>Don't:</th> </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Suggest expansions at natural milestones</td> <td>Pitch expansions randomly or aggressively</td> </tr>
+            <tr>
+                <td>Focus on customer needs, not sales targets</td> <td>Push irrelevant services</td> </tr>
+            <tr>
+                <td>Be transparent and honest</td> <td>Hide costs or surprise customers</td> </tr>
+            </tbody>
+    </table>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+    // --- Element References ---
+    // Grab the button, the content box to screenshot, and the body element.
+    const downloadButton = document.getElementById('download-table');
+    const contentToDownload = document.getElementById('downloadable-content'); // The callout box
+    const bodyElement = document.body; // Needed for background manipulation
+
+    // --- DOWNLOAD FUNCTIONALITY ---
+    // Function called when the download button is clicked.
+    function downloadTableAsPNG() {
+        // Sanity check: Ensure the content box element exists.
+        if (!contentToDownload) {
+            console.error("Cannot download: Content container not found!");
+            alert("Error: Could not find content to download.");
+            return; // Stop if the element isn't there
+        }
+        console.log("Initiating PNG download for expansion table...");
+
+        // Button is outside the capture area, no hiding/showing needed.
+
+        // --- Prepare for Capture ---
+        // Standard background transparency trick. Store original, set transparent, capture, restore.
+        const originalBodyBackground = bodyElement.style.backgroundColor;
+        bodyElement.style.backgroundColor = 'transparent';
+
+        // Force style calculation - helps prevent rendering glitches.
+        window.getComputedStyle(contentToDownload).getPropertyValue('width');
+
+        // --- Capture the Callout Box ---
+        html2canvas(contentToDownload, {
+            backgroundColor: null, // Use element's background, allow transparency
+            useCORS: true,         // Standard practice
+            logging: false,        // Keep console clean
+            scale: window.devicePixelRatio || 1 // Capture at screen resolution
+         })
+        .then(canvas => {
+            // --- Restore Background (Success Case) ---
+            console.log("Expansion table content captured.");
+            bodyElement.style.backgroundColor = originalBodyBackground; // Put the background back!
+
+            // --- Trigger Download ---
+            // Create a temporary link element to trigger the browser's download action.
+            const link = document.createElement('a');
+            // Set a specific, useful filename. NOTE: Title isn't captured separately here, so using a fixed name.
+            link.download = 'expansion_dos_donts.png';
+            link.href = canvas.toDataURL('image/png'); // Get the image data from the canvas.
+            document.body.appendChild(link); // Add the link to the document.
+            link.click(); // Programmatically click the link.
+            document.body.removeChild(link); // Clean up by removing the temporary link.
+            console.log("Download triggered.");
+        })
+        .catch(error => {
+             // --- Restore Background (Error Case) ---
+             // IMPORTANT: Always restore the background, even if capture fails!
+             bodyElement.style.backgroundColor = originalBodyBackground;
+
+            console.error('Error capturing expansion table:', error);
+            // Let the user know something went wrong.
+            alert('Sorry, could not download the table image. An error occurred.');
+        });
+    }
+
+    // --- EVENT LISTENER ---
+    // Attach the download function to the button's click event. Check button exists first.
+    if (downloadButton) {
+        downloadButton.addEventListener('click', downloadTableAsPNG);
+    } else {
+        // Log an error if the button wasn't found.
+        console.error("Download button element not found!");
+    }
+
+</script>
+
+</body>
+</html>

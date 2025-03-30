@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Callout Box: Personalization in Action</title>
+<style>
+    body { /* Basic body style */
+        margin: 0;
+        padding: 20px;
+        background-color: #ffffff; /* White bg for capture */
+        font-family: sans-serif; /* Keep font simple */
+    }
+
+    /* Wrapper for the action button */
+    .action-wrapper {
+        text-align: center; /* Center the button */
+        margin-bottom: 15px; /* Space below button */
+        max-width: 800px; /* Match callout box width */
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* Download Button Styling */
+    .download-button {
+        /* Standard small button style */
+        padding: 5px 10px;
+        background-color: #eee;
+        color: #333;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.8em;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        transition: background-color 0.3s ease, border-color 0.3s ease; /* Smooth hover */
+    }
+    .download-button:hover {
+        background-color: #ddd;
+        border-color: #bbb;
+    }
+
+    /* --- Callout Box Style (Standard) --- */
+    .callout-box {
+        border: 2px solid #f0f0f0; /* Light border */
+        background-color: #f9f9f9; /* Light background */
+        padding: 10px 10px 10px 10px; /* Consistent padding */
+        margin: 0 auto; /* Center horizontally */
+        border-radius: 8px; /* Soft corners */
+        font-family: sans-serif; /* Match body */
+        max-width: 800px; /* Keep width reasonable */
+        text-align: center; /* Centers the title and blockquote */
+    }
+    /* --- END USER STYLE --- */
+
+    .callout-box h3 {
+        /* Title styling */
+        margin-top: 10px; /* Add top margin back if needed */
+        color: #333;
+        margin-bottom: 15px; /* Space before the quote */
+        display: inline-block; /* Allows centering via parent */
+    }
+    /* Add the pin automatically via CSS */
+    .callout-box h3#callout-title::before {
+        content: "📌 "; /* Pin it! Personalization gets results. */
+    }
+    .callout-box blockquote { /* Style for the quote block */
+        /* Make the quote stand out visually */
+        background-color: #ffffff; /* White background for contrast */
+        border-left: 4px solid #007bff; /* Nice blue accent color */
+        margin: 0.5em auto; /* Center blockquote horizontally */
+        padding: 15px 20px; /* Padding inside the quote block */
+        font-style: italic; /* Italicize quote text */
+        color: #495057; /* Slightly softer text color */
+        box-shadow: 1px 1px 3px rgba(0,0,0,0.05); /* Subtle shadow */
+        line-height: 1.6; /* Readability */
+        max-width: 90%; /* Keep it from touching edges */
+        text-align: left; /* Align quote text left */
+        margin-bottom: 0; /* Remove bottom margin as it's last element */
+    }
+
+    /* Remove bottom margin from the very last element (blockquote) */
+    /* This rule is technically redundant because the blockquote style above */
+    /* already sets margin-bottom: 0, but it's harmless. */
+    .callout-box > :last-child {
+        margin-bottom: 0;
+    }
+</style>
+</head>
+<body>
+
+<div class="action-wrapper">
+    <button id="download-personalization-button" class="download-button">Download Personalization PNG</button>
+</div>
+
+<div class="callout-box" id="downloadable-content">
+    <h3 id="callout-title">Personalization in Action</h3>
+    <blockquote>
+        We sent targeted product usage tips to specific industries. Result? 40% higher engagement and enthusiastic customer feedback praising our tailored approach. </blockquote>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+    // --- Element References ---
+    // Grab the button, the content box, the title, and the body.
+    const downloadButton = document.getElementById('download-personalization-button');
+    const contentToDownload = document.getElementById('downloadable-content'); // The callout box
+    const calloutTitleElement = document.getElementById('callout-title'); // For filename
+    const bodyElement = document.body; // For background handling
+
+    // --- DOWNLOAD FUNCTIONALITY ---
+    // Function to capture the content box as a PNG image.
+    function downloadContentAsPNG() {
+        // Sanity check: Ensure the content box and title element exist.
+        if (!contentToDownload || !calloutTitleElement) {
+            console.error("Cannot download: Required elements (content box or title) not found!");
+            alert("Error: Could not find content to download.");
+            return; // Stop if elements are missing
+        }
+        console.log("Initiating PNG download for personalization example...");
+
+        // Button is outside the capture area, no hiding/showing needed.
+
+        // --- Prepare for Capture ---
+        // Standard background transparency trick. Store original, set transparent, capture, restore.
+        const originalBodyBackground = bodyElement.style.backgroundColor;
+        bodyElement.style.backgroundColor = 'transparent';
+
+        // Force style calculation - helps prevent rendering glitches.
+        window.getComputedStyle(contentToDownload).getPropertyValue('width');
+
+        // --- Capture the Callout Box ---
+        html2canvas(contentToDownload, {
+            backgroundColor: null, // Use element's background, allow transparency
+            useCORS: true,         // Standard practice
+            logging: false,        // Keep console quiet
+            scale: window.devicePixelRatio || 1 // Capture at screen resolution
+         })
+        .then(canvas => {
+            // --- Restore Background (Success Case) ---
+            console.log("Personalization content captured.");
+            bodyElement.style.backgroundColor = originalBodyBackground; // Put the background back!
+
+            // --- Generate Filename ---
+            // Create a clean filename from the title.
+            // 1. Get title text, remove pin, trim whitespace.
+            const titleText = calloutTitleElement.textContent.replace("📌 ", "").trim();
+            // 2. Use title or a specific default fallback name.
+            let filename = titleText ? titleText : 'personalization_action';
+            // 3. Sanitize: remove bad chars, replace spaces, limit length.
+            filename = filename.replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, '_').substring(0, 60);
+            filename += '.png'; // Add extension
+            console.log(`Generated filename: ${filename}`);
+
+            // --- Trigger Download ---
+            // Standard link-click method.
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            console.log("Download triggered.");
+        })
+        .catch(error => {
+             // --- Restore Background (Error Case) ---
+             // ALWAYS restore the background, even if capture fails!
+             bodyElement.style.backgroundColor = originalBodyBackground;
+
+            console.error('Error capturing personalization content:', error);
+            alert('Sorry, could not download the personalization image. An error occurred.');
+        });
+    }
+
+    // --- EVENT LISTENER ---
+    // Attach the download function to the button click. Check button exists.
+    if (downloadButton) {
+        downloadButton.addEventListener('click', downloadContentAsPNG);
+    } else {
+        console.error("Download button element not found!");
+    }
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Sample CSAT Survey</title>
+<style>
+    body { /* Basic body style */
+        margin: 0;
+        padding: 20px;
+        background-color: #ffffff; /* White bg for capture */
+        font-family: sans-serif; /* Simple font */
+    }
+
+    /* Wrapper for the action button */
+    .action-wrapper {
+        text-align: center; /* Center the button */
+        margin-bottom: 15px; /* Space below button */
+        /* Optional: Constrain width if desired */
+        /* max-width: 600px; */
+        /* margin-left: auto; */
+        /* margin-right: auto; */
+    }
+
+    /* Download Button Styling */
+    .download-button {
+        /* Standard small button style */
+        padding: 5px 10px;
+        background-color: #eee;
+        color: #333;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.8em;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        transition: background-color 0.3s ease, border-color 0.3s ease; /* Smooth hover */
+    }
+    .download-button:hover {
+        background-color: #ddd;
+        border-color: #bbb;
+    }
+
+    /* CSAT Survey Visual Styling - Container for the mock-up */
+    .csat-survey-visual {
+        border: 1px solid #cccccc; /* Simple border */
+        background-color: #ffffff; /* White background for the visual */
+        padding: 25px;
+        margin: 20px auto; /* Center the visual */
+        border-radius: 6px;
+        font-family: sans-serif; /* Match body */
+        text-align: center; /* Center content */
+        box-shadow: 0 2px 4px rgba(0,0,0,0.08); /* Subtle shadow */
+         /* Keep it reasonably narrow */
+         max-width: 500px;
+    }
+    .csat-survey-visual .survey-question {
+        /* Style the main question text */
+        font-size: 1.1em;
+        color: #333;
+        margin-top: 0;
+        margin-bottom: 20px; /* Space between question and stars */
+    }
+    .csat-survey-visual .star-rating {
+        /* Container for the star icons */
+        margin-bottom: 10px; /* Space between stars and labels */
+    }
+    .csat-survey-visual .star {
+        /* Style the star emojis */
+        font-size: 2.5em; /* Make stars prominent */
+        color: #ffcc00; /* Gold color */
+        margin: 0 5px; /* Space between stars */
+        cursor: default; /* Not interactive in this visual */
+        display: inline-block; /* Ensure spacing works */
+    }
+     /* Optional: Remove Hover effect if stars aren't meant to look interactive */
+    /* .csat-survey-visual .star:hover {
+         opacity: 0.7;
+     } */
+    .csat-survey-visual .star-labels {
+        /* Style the labels below the stars */
+        display: flex; /* Use flexbox for easy alignment */
+        justify-content: space-between; /* Push labels to ends */
+        font-size: 0.85em; /* Smaller text for labels */
+        color: #666666; /* Muted color */
+        padding: 0 15px; /* Align labels roughly under first/last star */
+    }
+</style>
+</head>
+<body>
+
+<div class="action-wrapper">
+    <button id="download-csat-button" class="download-button">Download Survey PNG</button>
+</div>
+
+<div class="csat-survey-visual" id="downloadable-content">
+    <p class="survey-question" id="survey-question-text">How satisfied were you with our service today?</p> <div class="star-rating">
+        <span class="star">⭐</span><span class="star">⭐</span><span class="star">⭐</span><span class="star">⭐</span><span class="star">⭐</span> </div>
+    <div class="star-labels">
+        <span>Very Dissatisfied</span> <span>Very Satisfied</span> </div>
+    </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+    // --- Element References ---
+    // Grab the button, the survey box, the question text, and the body.
+    const downloadButton = document.getElementById('download-csat-button');
+    const contentToDownload = document.getElementById('downloadable-content'); // The survey box
+    const surveyQuestionElement = document.getElementById('survey-question-text'); // For filename
+    const bodyElement = document.body; // For background handling
+
+    // --- DOWNLOAD FUNCTIONALITY ---
+    // Function to capture the survey visual as a PNG image.
+    function downloadContentAsPNG() {
+        // Check that the elements needed for capture and filename exist.
+        if (!contentToDownload || !surveyQuestionElement) {
+            console.error("Cannot download: Required elements (content box or question text) not found!");
+            alert("Error: Could not find content to download.");
+            return; // Stop if elements missing
+        }
+        console.log("Initiating PNG download for CSAT survey visual...");
+
+        // Button is outside the capture area - no hiding needed.
+
+        // --- Prepare for Capture ---
+        // Standard background transparency trick. Store original, set transparent, capture, restore.
+        const originalBodyBackground = bodyElement.style.backgroundColor;
+        bodyElement.style.backgroundColor = 'transparent';
+
+        // Force style calculation - helps prevent rendering glitches.
+        window.getComputedStyle(contentToDownload).getPropertyValue('width');
+
+        // --- Capture the Survey Visual Container ---
+        html2canvas(contentToDownload, {
+            backgroundColor: null, // Use element's background, allow transparency
+            useCORS: true,         // Standard practice
+            logging: false,        // Keep console quiet
+            scale: window.devicePixelRatio || 1 // Capture at screen resolution
+         })
+        .then(canvas => {
+            // --- Restore Background (Success Case) ---
+            console.log("CSAT survey visual captured.");
+            bodyElement.style.backgroundColor = originalBodyBackground; // Put the background back!
+
+            // --- Generate Filename ---
+            // Create a clean filename from the survey question text.
+            // 1. Get question text, trim whitespace.
+            const questionText = surveyQuestionElement.textContent.trim();
+            // 2. Use question or a default fallback name.
+            let filename = questionText ? questionText : 'csat_survey';
+            // 3. Sanitize: remove bad chars, replace spaces, limit length.
+            filename = filename.replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, '_').substring(0, 60);
+            filename += '.png'; // Add extension
+            console.log(`Generated filename: ${filename}`);
+
+            // --- Trigger Download ---
+            // Standard link-click method.
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            console.log("Download triggered.");
+        })
+        .catch(error => {
+             // --- Restore Background (Error Case) ---
+             // ALWAYS restore the background, even if capture fails!
+             bodyElement.style.backgroundColor = originalBodyBackground;
+
+            console.error('Error capturing CSAT survey visual:', error);
+            alert('Sorry, could not download the survey image. An error occurred.');
+        });
+    }
+
+    // --- EVENT LISTENER ---
+    // Attach the download function to the button's click event. Check button exists first.
+    if (downloadButton) {
+        downloadButton.addEventListener('click', downloadContentAsPNG);
+    } else {
+        // Log an error if the button wasn't found.
+        console.error("Download button element not found!");
+    }
+
+</script>
+
+</body>
+</html>

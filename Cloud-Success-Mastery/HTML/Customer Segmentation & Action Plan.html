@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Table: Customer Segmentation & Action Plan</title>
+<style>
+    body { /* Basic body style for background handling */
+        margin: 0;
+        padding: 20px;
+        background-color: #ffffff; /* Default background */
+        font-family: sans-serif; /* Set base font here */
+    }
+
+    /* Wrapper for the action button above the box */
+    .action-wrapper {
+        text-align: center; /* Center the button */
+        margin-bottom: 15px; /* Space below the button */
+        /* Match max-width if desired for alignment */
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* Download Button Styling */
+    .download-button {
+        padding: 5px 10px; /* Smaller button */
+        background-color: #eee;
+        color: #333;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.8em; /* Smaller font */
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+    .download-button:hover {
+        background-color: #ddd;
+        border-color: #bbb;
+    }
+
+    /* --- USER PREFERRED CALLOUT BOX STYLE --- */
+    .callout-box {
+        border: 2px solid #f0f0f0; /* Light gray border */
+        background-color: #f9f9f9; /* Very light gray background */
+        padding: 10px 10px 10px 10px; /* Applied user padding */
+        margin: 0 auto; /* Center the box horizontally */
+        border-radius: 8px; /* Slightly rounded corners */
+        font-family: sans-serif; /* Use a common sans-serif font */
+        max-width: 800px; /* Applied user max-width */
+        text-align: center; /* Needed to center inline-block title */
+    }
+    /* --- END USER STYLE --- */
+
+    .callout-box h3 {
+        margin-top: 10px; /* Added slight top margin due to reduced box padding */
+        color: #333;
+        margin-bottom: 15px;
+        display: inline-block; /* Keep for centering */
+    }
+    /* Add the pin using ::before */
+    .callout-box h3#callout-title::before {
+        content: "📌 "; /* The pin emoji and a space */
+    }
+    .segmentation-table { /* Specific class name */
+        width: 100%;
+        border-collapse: collapse; /* Remove gaps between cells */
+        margin-bottom: 0; /* Remove margin below table if it's the last element */
+        font-size: 0.95em; /* Slightly smaller table text */
+    }
+    .segmentation-table th,
+    .segmentation-table td {
+        border: 1px solid #ddd; /* Light gray border for table cells */
+        padding: 8px; /* Slightly reduced padding */
+        text-align: left;
+        vertical-align: top; /* Align content to the top */
+    }
+    .segmentation-table th {
+        background-color: #e9e9e9; /* Slightly darker gray for headers */
+        font-weight: bold;
+    }
+    /* Optional: Add alternating row colors */
+    .segmentation-table tr:nth-child(even) {
+        background-color: #fdfdfd;
+    }
+</style>
+</head>
+<body>
+
+<div class="action-wrapper">
+    <button id="download-segmentation-button" class="download-button">Download Segmentation PNG</button>
+</div>
+
+<div class="callout-box" id="downloadable-content"> <h3 id="callout-title">Customer Segmentation & Action Plan</h3> <table class="segmentation-table">
+        <thead>
+            <tr>
+                <th>Segment</th>
+                <th>Proactive Approach</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Strategic</td>
+                <td>Dedicated Success Managers, Quarterly Business Reviews</td>
+            </tr>
+            <tr>
+                <td>Growth</td>
+                <td>Regular check-ins, personalized product education</td>
+            </tr>
+            <tr>
+                <td>Stable</td>
+                <td>Consistent engagement, proactive feature updates</td>
+            </tr>
+            <tr>
+                <td>At-risk</td>
+                <td>Immediate outreach, focused recovery plans</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+    // --- Element References ---
+    const downloadButton = document.getElementById('download-segmentation-button');
+    const contentToDownload = document.getElementById('downloadable-content');
+    const calloutTitleElement = document.getElementById('callout-title'); // Get title element
+    const bodyElement = document.body;
+
+    // --- DOWNLOAD FUNCTIONALITY ---
+    function downloadContentAsPNG() {
+        if (!contentToDownload || !calloutTitleElement) { // Check for title element too
+            console.error("Required elements for download not found!");
+            return;
+        }
+
+        // --- NO HIDING NEEDED for external button ---
+
+        // Temporarily set body background to transparent
+        const originalBodyBackground = bodyElement.style.backgroundColor;
+        bodyElement.style.backgroundColor = 'transparent';
+
+        window.getComputedStyle(contentToDownload).getPropertyValue('width'); // Force reflow
+
+        // Capture the callout box containing the table
+        html2canvas(contentToDownload, {
+            backgroundColor: null, // Ensure canvas background is transparent
+            useCORS: true,
+            logging: false,
+            scale: window.devicePixelRatio || 1 // Use device pixel ratio
+         })
+        .then(canvas => {
+            // Restore body background
+            bodyElement.style.backgroundColor = originalBodyBackground;
+
+            // --- Generate Filename ---
+            // Remove the pin emoji from the title text before creating filename
+            const titleText = calloutTitleElement.textContent.replace("📌 ", "").trim();
+            let filename = titleText ? titleText : 'segmentation_plan'; // Use title or default
+            // Sanitize: remove invalid chars, replace whitespace with '_', truncate
+            filename = filename.replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, '_').substring(0, 60);
+            filename += '.png'; // Add extension
+
+
+            // Trigger download
+            const link = document.createElement('a');
+            link.download = filename; // Use the generated filename
+            link.href = canvas.toDataURL('image/png');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        })
+        .catch(error => {
+             // Restore body background on error
+            bodyElement.style.backgroundColor = originalBodyBackground;
+
+            console.error('Error capturing content:', error);
+            alert('Sorry, could not download the content image.');
+        });
+    }
+
+    // --- EVENT LISTENER ---
+    if (downloadButton) {
+        downloadButton.addEventListener('click', downloadContentAsPNG);
+    } else {
+        console.error("Download button not found!");
+    }
+
+</script>
+
+</body>
+</html>

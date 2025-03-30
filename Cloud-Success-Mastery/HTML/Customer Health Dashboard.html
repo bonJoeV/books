@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Health Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <style>
+        /* --- Color Palette & Theming --- */
+        :root {
+            /* Setting up the color palette upfront using CSS variables. Makes theme switching a breeze later. Gotta think ahead! */
+            --bg-color: #f8f9fa; /* Light gray background */
+            --card-bg-color: #ffffff; /* White cards */
+            --text-color: #212529; /* Dark text */
+            --heading-color: #212529; /* Same for headings */
+            --primary-accent: #0d6efd; /* Primary blue */
+            --secondary-accent: #0dcaf0; /* Secondary cyan */
+            --border-color: #dee2e6; /* Light border */
+            --shadow-color: rgba(0, 0, 0, 0.1); /* Soft shadow */
+            --green-light: #198754; /* Success green */
+            --yellow-light: #ffc107; /* Warning yellow */
+            --red-light: #dc3545; /* Danger red */
+            /* Chart specific colors - light theme */
+            --chart-axis-text: '#495057';
+            --chart-grid-line: 'rgba(0, 0, 0, 0.1)';
+            --chart-axis-line: '#ced4da';
+            --chart-point-border: '#ffffff';
+            --chart-tooltip-bg: 'rgba(0, 0, 0, 0.8)';
+            --chart-tooltip-text: '#ffffff';
+        }
+
+        .dark-theme {
+            /* Dark mode variables. Gotta give folks options, right? Some prefer the Batcave look. */
+            --bg-color: #121212; /* Very dark gray */
+            --card-bg-color: #1e1e1e; /* Slightly lighter card */
+            --text-color: #e0e0e0; /* Light gray text */
+            --heading-color: #ffffff; /* White headings */
+            --primary-accent: #bb86fc; /* Purple accent */
+            --secondary-accent: #03dac6; /* Teal accent */
+            --border-color: #333333; /* Darker border */
+            --shadow-color: rgba(0, 0, 0, 0.2); /* Slightly stronger shadow */
+            --green-light: #4CAF50; /* Different green */
+            --yellow-light: #FFC107; /* Same yellow */
+            --red-light: #F44336; /* Different red */
+            /* Chart specific colors - dark theme */
+            --chart-axis-text: '#e0e0e0';
+            --chart-grid-line: 'rgba(255, 255, 255, 0.2)';
+            --chart-axis-line: '#aaaaaa';
+            --chart-point-border: '#bb86fc'; /* Match accent */
+            /* Tooltip colors can often stay dark for readability */
+        }
+        /* --- End Theming --- */
+
+        body {
+            /* Using system fonts - clean and fast. */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            /* Pulling colors from variables for easy theming */
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6; /* Readability */
+            /* Smooth transitions for theme changes - don't want jarring flashes. */
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* --- Top Buttons (Theme/Download) --- */
+        .top-buttons {
+            /* Sticking the download/theme buttons top-right. Out of the way but easy to find. */
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px; /* Nice spacing between buttons */
+            z-index: 10; /* Keep 'em on top */
+        }
+
+        .theme-toggle-button,
+        .download-button {
+            /* Basic button styling, using variables so they adapt to the theme. */
+            padding: 8px 12px;
+            background-color: var(--card-bg-color);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            box-shadow: 0 2px 4px var(--shadow-color);
+            /* Smooth transitions for everything, including theme changes */
+            transition: opacity 0.3s ease, background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+        .theme-toggle-button:hover,
+        .download-button:hover {
+            /* Simple hover effect, nothing crazy. */
+            opacity: 0.8;
+        }
+        /* --- End Top Buttons --- */
+
+        /* --- Main Layout --- */
+        .dashboard-container {
+            /* The main wrapper for the dashboard content. */
+            max-width: 1200px;
+            margin: 20px auto; /* Center it */
+            padding: 20px;
+            /* More top padding needed to clear those absolute-positioned buttons up top. */
+            padding-top: 80px;
+            position: relative; /* Good practice, needed if children use absolute positioning. */
+        }
+
+        h1 {
+            /* Dashboard title - keep it centered and clear. */
+            color: var(--heading-color);
+            text-align: center;
+            margin-bottom: 40px; /* Space above the cards */
+        }
+
+        .metrics-grid {
+            /* Flexbox grid for the metric cards. */
+            display: flex;
+            flex-wrap: wrap; /* Allow cards to wrap to next line */
+            /* Looks better when there isn't a full row, centers the items */
+            justify-content: center;
+            gap: 25px; /* Space between cards */
+            padding: 0 10px; /* Prevent cards touching edges on small screens */
+        }
+        /* --- End Main Layout --- */
+
+        /* --- Metric Card Styling --- */
+        .metric-card {
+            /* Individual cards for each metric. */
+            background-color: var(--card-bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px; /* Soft corners */
+            padding: 25px;
+            box-shadow: 0 4px 8px var(--shadow-color); /* Give 'em some depth */
+            display: flex;
+            flex-direction: column; /* Stack elements vertically */
+            align-items: center; /* Center content horizontally */
+            text-align: center;
+            /* Flex basis controls the ideal width, grow/shrink are flexible */
+            flex: 0 1 350px;
+            /* Smooth theme transitions */
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .metric-card h2 {
+            /* Card title styling */
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: var(--primary-accent); /* Use the main theme accent color */
+            font-size: 1.4em;
+            width: 100%;
+             /* Helps keep card heights consistent if titles wrap to two lines. Adjust as needed. */
+            min-height: 2.8em;
+            display: flex; /* Use flex to vertically center the text within the min-height */
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Section for the big number, traffic light, trend */
+        .current-value-section {
+            display: flex;
+            align-items: center; /* Align items vertically */
+            justify-content: center; /* Center horizontally */
+            margin-bottom: 15px;
+            width: 100%;
+        }
+
+        .current-value {
+            /* The main KPI number. Make it big and bold. */
+            font-size: 2.4em;
+            font-weight: bold;
+            color: var(--heading-color);
+            margin-right: 10px; /* Space before the indicators */
+        }
+
+        .traffic-light {
+            /* Quick visual health check. Green/Yellow/Red. Simple circle. */
+            width: 20px;
+            height: 20px;
+            border-radius: 50%; /* Make it a circle */
+            display: inline-block;
+            margin-right: 10px; /* Space before the trend arrow */
+            border: 1px solid rgba(0,0,0,0.1); /* Subtle border */
+        }
+        /* Color is controlled by adding the class in the HTML */
+        .traffic-light.green { background-color: var(--green-light); }
+        .traffic-light.yellow { background-color: var(--yellow-light); }
+        .traffic-light.red { background-color: var(--red-light); }
+
+        .trend-indicator {
+            /* Up/Down/Stable arrow. Quick glance to see the direction. */
+            font-size: 1.5em; /* Make the arrow visible */
+        }
+        /* Color coding based on trend direction class */
+        .trend-indicator.up { color: var(--green-light); }
+        .trend-indicator.down { color: var(--red-light); }
+        .trend-indicator.stable { color: var(--yellow-light); }
+
+        .chart-container {
+            /* Container to hold the canvas for the chart */
+            width: 100%;
+            height: 180px; /* Fixed height for consistency */
+            margin-bottom: 15px; /* Space before the action link */
+        }
+
+        .action-link a {
+            /* A clear call-to-action link, styled like a button. */
+            color: var(--secondary-accent);
+            text-decoration: none;
+            font-weight: bold;
+            border: 1px solid var(--secondary-accent);
+            padding: 8px 15px;
+            border-radius: 5px;
+            /* Nice transition on hover */
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+            display: inline-block; /* Allows padding and margin */
+            font-size: 1em;
+        }
+        .action-link a:hover {
+            /* Invert colors on hover for emphasis */
+            background-color: var(--secondary-accent);
+            color: var(--card-bg-color); /* Make text light/dark depending on card background */
+        }
+        /* Specific hover style for dark mode to ensure text contrast */
+        .dark-theme .action-link a:hover {
+            color: #000000; /* Black text on the teal background */
+        }
+        /* --- End Metric Card Styling --- */
+
+    </style>
+</head>
+<body>
+
+    <div class="top-buttons">
+        <button id="download-dashboard" class="download-button">Download PNG</button>
+        <button id="theme-toggle" class="theme-toggle-button">Toggle Theme</button>
+    </div>
+
+    <div class="dashboard-container">
+        <h1>Customer Health Dashboard</h1>
+
+        <div class="metrics-grid">
+
+            <div class="metric-card">
+                <h2>Usage Analytics (MAU %)</h2>
+                <div class="current-value-section">
+                    <span class="current-value">75%</span>
+                    <span class="traffic-light green"></span> <span class="trend-indicator stable">&#9654;</span> </div>
+                <div class="chart-container">
+                    <canvas id="usageChart"></canvas> </div>
+                <div class="action-link">
+                    <a href="#" target="_blank">Investigate Usage Anomalies</a> </div>
+            </div>
+
+            <div class="metric-card">
+                <h2>Customer Sentiment (CSAT)</h2>
+                 <div class="current-value-section">
+                    <span class="current-value">82%</span>
+                    <span class="traffic-light yellow"></span> <span class="trend-indicator down">&#9660;</span> </div>
+                <div class="chart-container">
+                    <canvas id="sentimentChart"></canvas>
+                </div>
+                <div class="action-link">
+                    <a href="#" target="_blank">Review Negative Sentiment Drivers</a>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <h2>Milestone Completion %</h2>
+                 <div class="current-value-section">
+                    <span class="current-value">60%</span>
+                    <span class="traffic-light red"></span> <span class="trend-indicator stable">&#9654;</span> </div>
+                <div class="chart-container">
+                    <canvas id="milestoneChart"></canvas>
+                </div>
+                <div class="action-link">
+                    <a href="#" target="_blank">Target Overdue Milestones</a>
+                </div>
+            </div>
+
+            </div> </div> <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <script>
+        // --- Grab DOM Elements ---
+        // Get references to the buttons and key layout elements we'll need to manipulate.
+        const themeToggleButton = document.getElementById('theme-toggle');
+        const downloadDashboardButton = document.getElementById('download-dashboard');
+        const bodyElement = document.body;
+        const dashboardContainer = document.querySelector('.dashboard-container'); // The element we'll screenshot
+
+        // --- State Variables ---
+        let currentTheme = 'light'; // Default to light theme
+        let chartInstances = {}; // Store chart objects to destroy/update them later
+
+        // --- Theme Color Definitions for Charts ---
+        // Central place for chart colors per theme. Makes theme updates *much* easier than hardcoding everywhere.
+        // These should align with the CSS variables for consistency.
+        const chartColors = {
+            light: { axisText: '#495057', gridLine: 'rgba(0, 0, 0, 0.1)', axisLine: '#ced4da', lineColor: '#0d6efd', pointBg: '#0d6efd', pointBorder: '#ffffff', tooltipBg: 'rgba(0, 0, 0, 0.8)', tooltipText: '#ffffff' },
+            dark: { axisText: '#e0e0e0', gridLine: 'rgba(255, 255, 255, 0.2)', axisLine: '#aaaaaa', lineColor: '#bb86fc', pointBg: '#ffffff', pointBorder: '#bb86fc', tooltipBg: 'rgba(0, 0, 0, 0.8)', tooltipText: '#ffffff' }
+        };
+
+        /**
+         * Applies the selected theme (light/dark) to the page.
+         * @param {string} theme - 'light' or 'dark'
+         */
+        function applyTheme(theme) {
+            console.log(`Switching theme to: ${theme}`);
+            currentTheme = theme; // Update global state
+
+            // Toggle the class on the body element which triggers CSS variable changes
+            if (theme === 'dark') {
+                bodyElement.classList.add('dark-theme');
+                themeToggleButton.textContent = 'Switch to Light Mode'; // Update button text
+            } else {
+                bodyElement.classList.remove('dark-theme');
+                themeToggleButton.textContent = 'Switch to Dark Mode';
+            }
+            // Save the user's preference so it persists across visits
+            localStorage.setItem('dashboardTheme', theme);
+
+            // --- IMPORTANT: Update Charts ---
+            // Gotta destroy the old charts first! Chart.js doesn't automatically recolor everything on theme change.
+            console.log("Destroying old charts...");
+            Object.values(chartInstances).forEach(chart => { if(chart) chart.destroy(); });
+            chartInstances = {}; // Clear references to old chart objects
+            console.log("Rendering charts with new theme...");
+            renderCharts(); // Re-render charts with updated theme colors from chartColors object
+        }
+
+        /**
+         * Generates common Chart.js options based on the current theme.
+         * @param {number|null} suggestedMin - Optional minimum value suggestion for Y-axis.
+         * @returns {object} Chart.js options object
+         */
+        function getChartOptions(suggestedMin = null) {
+             // Central function for base chart options. Keep it DRY (Don't Repeat Yourself).
+            const colors = chartColors[currentTheme]; // Get color set for the active theme
+
+            // Base Y-axis options - customize as needed per chart later
+            let yOptions = {
+                ticks: { color: colors.axisText, precision: 0 }, // Text color, no decimals
+                grid: { color: colors.gridLine, borderColor: colors.axisLine, tickColor: colors.axisLine }, // Grid line colors
+                beginAtZero: true, // Sensible default for most metrics
+                suggestedMax: 100 // Good default for percentage charts (0-100)
+            };
+             // Allow overriding the minimum suggestion if needed (e.g., for non-percentage charts)
+             if (suggestedMin !== null) {
+                 yOptions.suggestedMin = suggestedMin;
+             }
+
+            return {
+                responsive: true, // Make chart adapt to container size
+                maintainAspectRatio: false, // Allow chart to fill the container height/width independently
+                plugins: {
+                    legend: { display: false }, // Keep it clean, hide the legend
+                    tooltip: { // Style the tooltips on hover
+                        enabled: true,
+                        backgroundColor: colors.tooltipBg,
+                        titleColor: colors.tooltipText,
+                        bodyColor: colors.tooltipText
+                    }
+                },
+                scales: { // Axis configuration
+                    x: { // X-axis (Months)
+                        ticks: { color: colors.axisText, maxRotation: 0, autoSkipPadding: 12 }, // Text color, prevent rotation, smart label skipping
+                        grid: { color: colors.gridLine, borderColor: colors.axisLine, tickColor: colors.axisLine } // Grid line colors
+                    },
+                    y: yOptions // Apply the Y-axis options we defined above
+                }
+            };
+        }
+
+         /**
+         * Creates the dataset configuration object for a line chart.
+         * @param {Array<number>} data - The array of data points.
+         * @param {string} label - The label for the dataset (used in tooltips).
+         * @returns {object} Chart.js dataset configuration object.
+         */
+        function getLineChartDatasetConfig(data, label) {
+            // Config specific to how the line and points look. Pulls colors from the theme object.
+            const colors = chartColors[currentTheme];
+            return {
+                label: label,
+                data: data,
+                borderColor: colors.lineColor, // Line color from theme
+                borderWidth: 2, // Line thickness
+                tension: 0.1, // Adds a slight curve to the line, looks smoother
+                pointBackgroundColor: colors.pointBg, // Point fill color
+                pointBorderColor: colors.pointBorder, // Point border color
+                 // Slightly thicker border in light mode for better visibility against white points
+                pointBorderWidth: (currentTheme === 'light' ? 1.5 : 1),
+                pointRadius: 2.5, // Size of the points
+                pointHoverRadius: 4, // Size on hover
+                pointHoverBackgroundColor: colors.pointBg,
+                pointHoverBorderColor: colors.pointBorder
+            };
+        }
+
+
+        /**
+         * Renders all charts on the dashboard.
+         * Destroys existing charts if they exist before creating new ones.
+         */
+        function renderCharts() {
+            // If charts already exist, bail out (should have been destroyed by applyTheme)
+            // This is a safety check, primary destruction happens in applyTheme
+            if (Object.keys(chartInstances).length > 0 && chartInstances.usage) {
+                 console.warn("Render called but charts exist - likely redundant call.");
+                 // Optionally destroy again here, belt and suspenders
+                 // Object.values(chartInstances).forEach(chart => { if(chart) chart.destroy(); });
+                 // chartInstances = {};
+                // return; // Or proceed to re-render anyway
+            }
+
+            const options = getChartOptions(); // Get base options for the current theme
+
+            // --- Generate Labels for X-Axis (Last 12 Months) ---
+            // Dynamically create labels like "Jan '25", "Feb", "Mar"... Makes the X-axis make sense.
+            const now = new Date();
+            const monthLabels = Array.from({ length: 12 }, (_, i) => {
+                const d = new Date(now);
+                // Calculate the month for each label, going back 11 months for the start
+                d.setMonth(now.getMonth() - (11 - i));
+                const year = d.getFullYear().toString().slice(-2); // Get last two digits of year (e.g., '25)
+                const month = d.toLocaleString('default', { month: 'short' }); // Get short month name (e.g., 'Jan')
+                // Show the year only for January or the very first label in the sequence for context
+                return (d.getMonth() === 0 || i === 0) ? `${month} '${year}` : month;
+            });
+
+            // --- Sample Data (IMPORTANT: Replace with your actual data fetching logic!) ---
+            // Placeholder data! Needs to be replaced with real-time data fetch in a real app.
+            const usageData = [70, 72, 71, 73, 75, 74, 76, 75, 77, 78, 76, 75];
+            const sentimentData = [88, 87, 86, 85, 84, 85, 83, 82, 83, 81, 82, 82];
+            const milestoneData = [50, 52, 55, 56, 58, 57, 59, 60, 61, 59, 60, 60];
+
+            // --- Render Usage Chart ---
+            const usageCtx = document.getElementById('usageChart')?.getContext('2d');
+            if (usageCtx) { // Check if canvas element exists
+                chartInstances.usage = new Chart(usageCtx, {
+                    type: 'line', // Line chart
+                    data: {
+                        labels: monthLabels, // Use generated month labels
+                        datasets: [getLineChartDatasetConfig(usageData, 'MAU %')] // Get styled dataset
+                    },
+                     // Customize Y-axis ticks to add a '%' sign
+                     options: {
+                         ...options, // Start with base options
+                         scales: {
+                             ...options.scales,
+                             y: {
+                                 ...options.scales.y,
+                                 ticks: { ...options.scales.y.ticks, callback: value => value + '%' } // Add % sign
+                             }
+                         }
+                     }
+                });
+            } else { console.error("Canvas for Usage Chart not found!"); }
+
+
+            // --- Render Sentiment Chart ---
+            const sentimentCtx = document.getElementById('sentimentChart')?.getContext('2d');
+             if (sentimentCtx) {
+                 chartInstances.sentiment = new Chart(sentimentCtx, {
+                     type: 'line',
+                     data: {
+                         labels: monthLabels,
+                         datasets: [getLineChartDatasetConfig(sentimentData, 'Avg CSAT')]
+                     },
+                      // Customize Y-axis ticks to add a '%' sign
+                      options: {
+                          ...options,
+                          scales: {
+                              ...options.scales,
+                              y: {
+                                  ...options.scales.y,
+                                  ticks: { ...options.scales.y.ticks, callback: value => value + '%' }
+                              }
+                          }
+                      }
+                 });
+             } else { console.error("Canvas for Sentiment Chart not found!"); }
+
+
+            // --- Render Milestone Chart ---
+             const milestoneCtx = document.getElementById('milestoneChart')?.getContext('2d');
+             if (milestoneCtx) {
+                 chartInstances.milestone = new Chart(milestoneCtx, {
+                     type: 'line',
+                     data: {
+                         labels: monthLabels,
+                         datasets: [getLineChartDatasetConfig(milestoneData, 'Milestone %')]
+                     },
+                      // Customize Y-axis ticks to add a '%' sign
+                      options: {
+                          ...options,
+                          scales: {
+                              ...options.scales,
+                              y: {
+                                  ...options.scales.y,
+                                  ticks: { ...options.scales.y.ticks, callback: value => value + '%' }
+                              }
+                          }
+                      }
+                 });
+             } else { console.error("Canvas for Milestone Chart not found!"); }
+        }
+
+        /**
+         * Handles downloading the dashboard container as a PNG image.
+         */
+        function downloadDashboardAsPNG() {
+            // Screenshot function using html2canvas.
+            if (!dashboardContainer) {
+                console.error("Dashboard container element not found! Can't download.");
+                alert("Error: Could not find dashboard content to download.");
+                return;
+            }
+            console.log("Starting dashboard download process...");
+
+            // --- Prepare for Capture ---
+            // Temporarily make body background transparent so it doesn't show up behind the container capture.
+            const originalBodyBackground = bodyElement.style.backgroundColor;
+            bodyElement.style.backgroundColor = 'transparent'; // Make it see-through
+
+            // --- Capture with html2canvas ---
+            html2canvas(dashboardContainer, { // Target the container specifically
+                backgroundColor: null, // Use the container's actual background, null lets transparency work if needed
+                useCORS: true,         // Important if cards contained external images
+                logging: false         // Keep console cleaner
+                // Consider adding scale: window.devicePixelRatio || 1 for sharper images on high-res screens
+             })
+            .then(canvas => {
+                // --- Restore Background (Success) ---
+                console.log("Canvas captured successfully.");
+                bodyElement.style.backgroundColor = originalBodyBackground; // Put the body background back!
+
+                // --- Trigger Download ---
+                // Same download trick: create link, set data URL, click, remove.
+                const link = document.createElement('a');
+                link.download = 'customer_health_dashboard.png'; // Filename
+                link.href = canvas.toDataURL('image/png'); // Convert canvas to PNG
+                link.click(); // Simulate click to download
+                console.log("Download triggered.");
+            })
+            .catch(error => {
+                 // --- Restore Background (Error) ---
+                 // CRITICAL: Restore background even if capture fails!
+                 bodyElement.style.backgroundColor = originalBodyBackground;
+                console.error('Error capturing dashboard with html2canvas:', error);
+                alert('Sorry, could not download the dashboard image. There was an error during capture.');
+            });
+        }
+
+
+        // --- Event Listeners ---
+
+        // Theme Toggle Button
+        themeToggleButton.addEventListener('click', () => {
+            // Simple logic: if current is light, switch to dark, otherwise switch to light.
+            applyTheme(currentTheme === 'light' ? 'dark' : 'light');
+        });
+
+        // Download Button
+        downloadDashboardButton.addEventListener('click', downloadDashboardAsPNG);
+
+        // --- Initial Page Load Setup ---
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("DOM loaded. Setting up initial theme and charts.");
+            // Runs once the page structure is ready. Avoids trying to access elements that don't exist yet.
+
+            // --- Determine Initial Theme ---
+            // 1. Check if user saved a theme preference previously.
+            // 2. If not, check if their OS prefers dark mode.
+            // 3. Default to light mode otherwise.
+            const savedTheme = localStorage.getItem('dashboardTheme');
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            let initialTheme = 'light'; // Default
+
+            if (savedTheme) {
+                initialTheme = savedTheme;
+                console.log(`Found saved theme: ${initialTheme}`);
+            } else if (prefersDark) {
+                initialTheme = 'dark';
+                console.log("Detected OS preference for dark mode.");
+            } else {
+                 console.log("Defaulting to light theme.");
+            }
+
+            // --- Apply Initial Theme (without transition) ---
+            // Apply the theme *before* the first render to avoid a flash of unstyled/wrongly styled content.
+            // Set the global variable directly.
+            currentTheme = initialTheme;
+            // Add/remove class and set button text directly, mimicking applyTheme but without triggering chart re-render yet.
+            if (initialTheme === 'dark') {
+                bodyElement.classList.add('dark-theme');
+                themeToggleButton.textContent = 'Switch to Light Mode';
+            } else {
+                bodyElement.classList.remove('dark-theme'); // Ensure it's not there if light
+                themeToggleButton.textContent = 'Switch to Dark Mode';
+            }
+
+            // --- Initial Chart Render ---
+            // Now that the theme is set, render the charts for the first time.
+            renderCharts();
+            console.log("Initial charts rendered.");
+        });
+
+    </script>
+
+</body>
+</html>

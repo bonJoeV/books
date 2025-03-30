@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Table: Culture Dos & Don'ts</title>
+<style>
+    body { /* Basic body style - Keep it clean and simple */
+        margin: 0;
+        padding: 20px;
+        background-color: #ffffff;
+        font-family: sans-serif; /* Standard readable font */
+    }
+
+    /* Wrapper for the action button */
+    .action-wrapper {
+        /* Centering the download button above the main content. Keep controls easy to find. */
+        text-align: center;
+        margin-bottom: 15px;
+        max-width: 800px; /* Match callout box width for visual balance */
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* Download Button Styling */
+    .download-button {
+        /* Smaller button style for this context. Subtle but clear. */
+        padding: 5px 10px;
+        background-color: #eee;
+        color: #333;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.8em;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        transition: background-color 0.3s ease, border-color 0.3s ease; /* Smooth hover */
+    }
+    .download-button:hover {
+        background-color: #ddd;
+        border-color: #bbb;
+    }
+
+    /* --- Style for the main content box --- */
+    .callout-box {
+        /* Using the preferred callout style. Light background, soft border, centered. Makes the key takeaways pop. */
+        border: 2px solid #f0f0f0; /* Light gray border */
+        background-color: #f9f9f9; /* Very light gray background */
+        padding: 10px 10px 10px 10px; /* User's padding preference */
+        margin: 0 auto; /* Center the box horizontally */
+        border-radius: 8px; /* Slightly rounded corners */
+        font-family: sans-serif; /* Match body font */
+        max-width: 800px; /* Keep it from getting too wide */
+        text-align: center; /* Needed to center the inline-block title */
+    }
+    /* --- End Box Style --- */
+
+    .callout-box h3 {
+        /* Simple title style inside the box */
+        margin-top: 10px; /* Consistent top margin */
+        color: #333;
+        margin-bottom: 15px; /* Space above the table */
+        display: inline-block; /* Keeps the pin emoji aligned nicely when centered */
+    }
+    /* Add the pin using ::before pseudo-element */
+    .callout-box h3#callout-title::before {
+         /* Adding the pin emoji. Little visual flair to draw the eye. Content matters! */
+        content: "📌 "; /* The pin emoji and a space */
+    }
+    .dos-donts-table { /* Specific class name for this table */
+        /* Styling the Do's and Don'ts table. Clean and clear. */
+        width: 100%;
+        border-collapse: collapse; /* Remove gaps between cells */
+        margin-bottom: 0; /* Remove margin below table */
+        font-size: 0.95em; /* Slightly smaller text */
+        text-align: left; /* Override parent center align */
+    }
+    .dos-donts-table th,
+    .dos-donts-table td {
+        /* Basic cell padding and borders. Keep it readable. */
+        border: 1px solid #ddd; /* Light gray border for table cells */
+        padding: 8px;
+        vertical-align: top; /* Align content to the top, looks better if text wraps */
+        width: 50%; /* Aim for equal width columns */
+    }
+    .dos-donts-table th {
+        /* Header style - slightly darker background, bold text. Makes columns clear. */
+        background-color: #e9e9e9;
+        font-weight: bold;
+    }
+    /* Optional: Zebra striping for readability, especially helpful if the table gets longer. */
+    .dos-donts-table tr:nth-child(even) {
+        background-color: #fdfdfd; /* Very subtle striping */
+    }
+     /* Remove extra space below the last element (the table) inside the box. Tidy finish. */
+    .callout-box > :last-child {
+        margin-bottom: 0;
+    }
+</style>
+</head>
+<body>
+
+<div class="action-wrapper">
+    <button id="download-culture-button" class="download-button">Download Culture PNG</button>
+</div>
+
+<div class="callout-box" id="downloadable-content">
+    <h3 id="callout-title">Culture Do's & Don'ts</h3>
+    <table class="dos-donts-table">
+        <thead>
+            <tr>
+                <th>Do:</th> <th>Don't:</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Align rewards with obsession</td> <td>Reward quantity over quality</td> </tr>
+            <tr>
+                <td>Encourage empathy-driven solutions</td> <td>Rely on scripts and rigid policies</td> </tr>
+            <tr>
+                <td>Communicate obsessively & clearly</td> <td>Assume your team knows your values</td> </tr>
+            <tr>
+                <td>Lead by authentic example</td> <td>Delegate culture-building to HR</td> </tr>
+        </tbody>
+    </table>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+    // --- Element References ---
+    // Grab the elements needed for the download functionality.
+    const downloadButton = document.getElementById('download-culture-button');
+    const contentToDownload = document.getElementById('downloadable-content'); // The callout box
+    const calloutTitleElement = document.getElementById('callout-title'); // Need this for the filename
+    const bodyElement = document.body; // To handle background transparency during capture
+
+    // --- DOWNLOAD FUNCTIONALITY ---
+    // Core function triggered when the download button is clicked.
+    function downloadContentAsPNG() {
+        // Always check if the elements actually exist before trying to use them. Prevents nasty errors.
+        if (!contentToDownload || !calloutTitleElement) {
+            console.error("Required elements for download (content box or title) not found!");
+            alert("Error: Could not find the content to download.");
+            return; // Stop execution if elements are missing
+        }
+        console.log("Initiating PNG download for culture table...");
+
+        // Button is outside the capture area, so no need to hide it this time.
+
+        // --- Prepare for Capture ---
+        // Same trick: make body transparent during capture for a clean PNG of just the box.
+        const originalBodyBackground = bodyElement.style.backgroundColor;
+        bodyElement.style.backgroundColor = 'transparent';
+
+        // Just in case: Force browser to calculate styles before capture. Helps prevent rendering issues.
+        window.getComputedStyle(contentToDownload).getPropertyValue('width');
+
+        // --- Capture with html2canvas ---
+        // Capture the callout box element specifically.
+        html2canvas(contentToDownload, {
+            backgroundColor: null, // Use the element's background, allow transparency
+            useCORS: true,         // Good practice if images were involved
+            logging: false,        // Keep console clean
+            scale: window.devicePixelRatio || 1 // Capture at device resolution for crispness
+         })
+        .then(canvas => {
+            // --- Restore Background (Success) ---
+            console.log("Content captured successfully.");
+            bodyElement.style.backgroundColor = originalBodyBackground; // Put the background back!
+
+            // --- Generate Filename ---
+            // Create a smart filename from the title. Makes the download easier to find.
+            // 1. Get title text, remove the pin emoji and any leading/trailing whitespace.
+            const titleText = calloutTitleElement.textContent.replace("📌 ", "").trim();
+            // 2. Use title text for filename, or a default if title is empty for some reason.
+            let filename = titleText ? titleText : 'culture_dos_donts';
+            // 3. Sanitize: remove chars invalid in filenames, replace spaces with underscores, limit length.
+            filename = filename.replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, '_').substring(0, 60);
+            filename += '.png'; // Add the file extension
+            console.log(`Generated filename: ${filename}`);
+
+            // --- Trigger Download ---
+            // The usual routine: create link, set href to PNG data URL, click, remove link.
+            const link = document.createElement('a');
+            link.download = filename; // Use our sanitized filename
+            link.href = canvas.toDataURL('image/png');
+            document.body.appendChild(link); // Add link to DOM
+            link.click(); // Simulate click
+            document.body.removeChild(link); // Clean up the link element
+        })
+        .catch(error => {
+             // --- Restore Background (Error) ---
+             // CRITICAL: Always restore the background, even if capture fails!
+             bodyElement.style.backgroundColor = originalBodyBackground;
+
+            console.error('Error capturing content with html2canvas:', error);
+            alert('Sorry, could not download the content image. An error occurred.');
+        });
+    }
+
+    // --- EVENT LISTENER ---
+    // Hook up the button click to the download function. Check if button exists first!
+    if (downloadButton) {
+        downloadButton.addEventListener('click', downloadContentAsPNG);
+    } else {
+        // This shouldn't happen based on the HTML, but good to have a fallback log.
+        console.error("Could not find the download button!");
+    }
+
+</script>
+
+</body>
+</html>

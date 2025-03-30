@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fan Metrics Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <style>
+        /* --- Theme Variables --- */
+        /* Central color definitions for easy theme switching */
+        :root {
+            /* Light Theme (Default) */
+            --bg-color: #f8f9fa;
+            --card-bg-color: #ffffff;
+            --text-color: #212529;
+            --heading-color: #212529;
+            --primary-accent: #0d6efd; /* Blue */
+            --secondary-accent: #0dcaf0; /* Cyan */
+            --border-color: #dee2e6;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --green-light: #198754;
+            --yellow-light: #ffc107;
+            --red-light: #dc3545;
+            /* Chart Specific - Light */
+            --chart-axis-text: '#495057';
+            --chart-grid-line: 'rgba(0, 0, 0, 0.1)';
+            --chart-axis-line: '#ced4da';
+            --chart-point-border: '#ffffff';
+            --chart-tooltip-bg: 'rgba(0, 0, 0, 0.8)';
+            --chart-tooltip-text: '#ffffff';
+        }
+
+        .dark-theme {
+            /* Dark Theme Overrides */
+            --bg-color: #121212;
+            --card-bg-color: #1e1e1e;
+            --text-color: #e0e0e0;
+            --heading-color: #ffffff;
+            --primary-accent: #bb86fc; /* Purple */
+            --secondary-accent: #03dac6; /* Teal */
+            --border-color: #333333;
+            --shadow-color: rgba(0, 0, 0, 0.2);
+            --green-light: #4CAF50;
+            --yellow-light: #FFC107;
+            --red-light: #F44336;
+             /* Chart Specific - Dark */
+            --chart-axis-text: '#e0e0e0';
+            --chart-grid-line: 'rgba(255, 255, 255, 0.2)';
+            --chart-axis-line: '#aaaaaa';
+            --chart-point-border: '#bb86fc'; /* Match line color */
+        }
+        /* --- End Theme Variables --- */
+
+        body {
+            /* Basic body setup. Uses theme variables. */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; /* System fonts are clean */
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6; /* Readability */
+            transition: background-color 0.3s ease, color 0.3s ease; /* Smooth theme changes */
+        }
+
+        /* Wrapper for top-right buttons */
+        .top-buttons {
+            /* Position buttons top-right, out of the main content flow */
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px; /* Space between */
+            z-index: 10; /* Keep on top */
+        }
+
+        /* Shared style for buttons in the top-right */
+        .theme-toggle-button,
+        .download-button {
+            /* Consistent button styling */
+            padding: 8px 12px;
+            background-color: var(--card-bg-color);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            box-shadow: 0 2px 4px var(--shadow-color);
+            transition: opacity 0.3s ease, background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; /* Smooth transitions */
+            /* Display handled by JS for download logic */
+        }
+        .theme-toggle-button:hover,
+        .download-button:hover {
+            opacity: 0.8; /* Simple hover effect */
+        }
+
+
+        .dashboard-container {
+            /* Main content area */
+            max-width: 1200px;
+            margin: 20px auto; /* Center */
+            padding: 20px;
+            padding-top: 80px; /* Extra top padding to avoid button overlap */
+            position: relative; /* Context */
+        }
+
+        h1 {
+            /* Dashboard title - Focus on FANS! */
+            color: var(--heading-color);
+            text-align: center;
+            margin-bottom: 40px; /* Space before metrics */
+        }
+
+        .metrics-grid {
+            /* Grid layout for the fan metric cards */
+            display: flex;
+            flex-wrap: wrap; /* Allow wrapping */
+            justify-content: center; /* Center cards */
+            gap: 25px; /* Space between cards */
+            padding: 0 10px; /* Prevent touching edges */
+        }
+
+        .metric-card {
+            /* Individual metric card styling */
+            background-color: var(--card-bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px; /* Soft corners */
+            padding: 25px;
+            box-shadow: 0 4px 8px var(--shadow-color); /* Depth */
+            display: flex;
+            flex-direction: column; /* Stack vertically */
+            align-items: center; /* Center content */
+            text-align: center;
+            flex: 0 1 350px; /* Control base size, allow flex */
+            transition: background-color 0.3s ease, border-color 0.3s ease; /* Theme transition */
+        }
+
+        .metric-card h2 {
+            /* Card title styling */
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: var(--primary-accent); /* Use theme accent */
+            font-size: 1.4em;
+            width: 100%;
+            min-height: 2.8em; /* Consistent height */
+            display: flex; /* Use flex for vertical centering */
+            align-items: center;
+            justify-content: center;
+        }
+
+        .current-value-section {
+            /* Holds the big number + indicators */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            width: 100%;
+        }
+
+        .current-value {
+            /* The main metric value - make it stand out */
+            font-size: 2.4em;
+            font-weight: bold;
+            color: var(--heading-color);
+            margin-right: 10px; /* Space before indicators */
+        }
+
+        .traffic-light {
+            /* R/Y/G status indicator */
+            width: 20px;
+            height: 20px;
+            border-radius: 50%; /* Circle */
+            display: inline-block;
+            margin-right: 10px; /* Space before trend arrow */
+            border: 1px solid rgba(0,0,0,0.1); /* Subtle border */
+        }
+        /* Colors set by class */
+        .traffic-light.green { background-color: var(--green-light); }
+        .traffic-light.yellow { background-color: var(--yellow-light); }
+        .traffic-light.red { background-color: var(--red-light); }
+
+        .trend-indicator {
+            /* Up/Down/Stable trend arrow */
+            font-size: 1.5em;
+        }
+        /* Colors set by class */
+        .trend-indicator.up { color: var(--green-light); }
+        .trend-indicator.down { color: var(--red-light); }
+        .trend-indicator.stable { color: var(--yellow-light); }
+
+        .chart-container {
+            /* Container for the mini trend chart */
+            width: 100%;
+            height: 180px; /* Fixed height */
+            margin-bottom: 15px; /* Space before action link */
+        }
+
+        .action-link a {
+            /* Styling for the actionable link */
+            color: var(--secondary-accent); /* Use secondary accent */
+            text-decoration: none;
+            font-weight: bold;
+            border: 1px solid var(--secondary-accent);
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; /* Smooth transitions */
+            display: inline-block; /* Allows padding */
+            font-size: 1em;
+        }
+        .action-link a:hover {
+            /* Invert colors on hover */
+            background-color: var(--secondary-accent);
+            color: var(--card-bg-color); /* Adapt text color */
+        }
+        /* Dark theme specific hover text color */
+        .dark-theme .action-link a:hover {
+             color: #000000; /* Black text */
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="top-buttons" id="top-buttons-wrapper">
+        <button id="download-dashboard" class="download-button">Download PNG</button>
+         <button id="theme-toggle" class="theme-toggle-button">Toggle Theme</button>
+    </div>
+
+    <div class="dashboard-container" id="downloadable-content">
+        <h1>Fan Metrics Dashboard</h1> <div class="metrics-grid">
+
+            <div class="metric-card">
+                <h2>Renewal Rate</h2> <div class="current-value-section">
+                    <span class="current-value">96%</span>
+                    <span class="traffic-light green"></span> <span class="trend-indicator up">&#9650;</span> </div>
+                <div class="chart-container">
+                    <canvas id="renewalRateChart"></canvas> </div>
+                <div class="action-link">
+                    <a href="#" target="_blank">Analyze Churn Reasons</a> </div>
+            </div>
+
+            <div class="metric-card">
+                <h2>Expansion Revenue (NRR)</h2> <div class="current-value-section">
+                    <span class="current-value">118%</span> <span class="traffic-light green"></span> <span class="trend-indicator up">&#9650;</span> </div>
+                <div class="chart-container">
+                    <canvas id="expansionRevenueChart"></canvas>
+                </div>
+                <div class="action-link">
+                    <a href="#" target="_blank">Identify Upsell Opportunities</a> </div>
+            </div>
+
+            <div class="metric-card">
+                <h2>Qualified Referral Leads</h2> <div class="current-value-section">
+                    <span class="current-value">32</span> <span class="traffic-light green"></span> <span class="trend-indicator up">&#9650;</span> </div>
+                <div class="chart-container">
+                    <canvas id="referralLeadsChart"></canvas>
+                </div>
+                <div class="action-link">
+                    <a href="#" target="_blank">Promote Referral Program</a> </div>
+            </div>
+            </div> </div> <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <script>
+        // --- Element References ---
+        // Grab necessary DOM elements.
+        const themeToggleButton = document.getElementById('theme-toggle');
+        const downloadDashboardButton = document.getElementById('download-dashboard'); // Download button
+        const topButtonsWrapper = document.getElementById('top-buttons-wrapper'); // Wrapper for hiding buttons
+        const dashboardContainer = document.getElementById('downloadable-content'); // Dashboard area to capture
+        const bodyElement = document.body; // For theme class
+
+        // --- State ---
+        let currentTheme = 'light'; // Track active theme
+        let chartInstances = {}; // Store chart objects
+
+        // --- Color Definitions ---
+        // Central object for theme-specific chart colors. DRY principle.
+        const chartColors = {
+            light: { axisText: '#495057', gridLine: 'rgba(0, 0, 0, 0.1)', axisLine: '#ced4da', lineColor: '#0d6efd', pointBg: '#0d6efd', pointBorder: '#ffffff', tooltipBg: 'rgba(0, 0, 0, 0.8)', tooltipText: '#ffffff' },
+            dark: { axisText: '#e0e0e0', gridLine: 'rgba(255, 255, 255, 0.2)', axisLine: '#aaaaaa', lineColor: '#bb86fc', pointBg: '#ffffff', pointBorder: '#bb86fc', tooltipBg: 'rgba(0, 0, 0, 0.8)', tooltipText: '#ffffff' }
+        };
+
+        // --- THEME TOGGLE LOGIC ---
+        // Applies the selected theme and triggers chart re-render.
+        function applyTheme(theme) {
+            console.log(`Applying theme: ${theme}`);
+            currentTheme = theme; // Update state
+            // Toggle body class, update button text, save preference.
+            if (theme === 'dark') {
+                bodyElement.classList.add('dark-theme');
+                if(themeToggleButton) themeToggleButton.textContent = 'Switch to Light Mode';
+            } else {
+                bodyElement.classList.remove('dark-theme');
+                if(themeToggleButton) themeToggleButton.textContent = 'Switch to Dark Mode';
+            }
+            localStorage.setItem('dashboardTheme', theme);
+            // Crucial: Destroy existing charts before re-rendering.
+            console.log("Destroying charts for theme update...");
+            Object.values(chartInstances).forEach(chart => { if(chart) chart.destroy(); });
+            chartInstances = {}; // Reset storage
+            renderCharts(); // Re-render with new colors
+            console.log("Charts re-rendered for new theme.");
+        }
+
+        // --- CHART RENDERING LOGIC ---
+        // Function to get shared chart options. Includes specific handling if needed.
+        function getChartOptions(suggestedMin = null) {
+            const colors = chartColors[currentTheme];
+            let yOptions = { // Base Y-axis options
+                ticks: { color: colors.axisText, precision: 0 },
+                grid: { color: colors.gridLine, borderColor: colors.axisLine, tickColor: colors.axisLine },
+                beginAtZero: false // Default to NOT starting at zero unless specified
+            };
+            if (suggestedMin !== null) { // Allow setting a suggested minimum value (e.g., for rates)
+                yOptions.suggestedMin = suggestedMin;
+            }
+            // Note: The check using 'this.canvas.id' within this function context likely won't work as intended
+            // to set beginAtZero dynamically based on the chart ID calling it.
+            // Explicitly set beginAtZero in the specific chart options if needed.
+
+            // Return base Chart.js options object.
+            return {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: { enabled: true, backgroundColor: colors.tooltipBg, titleColor: colors.tooltipText, bodyColor: colors.tooltipText } },
+                scales: { x: { ticks: { color: colors.axisText, maxRotation: 0, autoSkipPadding: 12 }, grid: { color: colors.gridLine, borderColor: colors.axisLine, tickColor: colors.axisLine } }, y: yOptions }
+            };
+        }
+
+
+        // Function to get shared dataset configuration for line charts.
+        function getLineChartDatasetConfig(data, label) {
+             const colors = chartColors[currentTheme];
+             // Return dataset config object (line color, points, etc.)
+             return { label: label, data: data, borderColor: colors.lineColor, borderWidth: 2, tension: 0.1, pointBackgroundColor: colors.pointBg, pointBorderColor: colors.pointBorder, pointBorderWidth: (currentTheme === 'light' ? 1.5 : 1), pointRadius: 2.5, pointHoverRadius: 4, pointHoverBackgroundColor: colors.pointBg, pointHoverBorderColor: colors.pointBorder };
+        }
+
+        // Main function to render all charts.
+        function renderCharts() {
+            const baseOptions = getChartOptions(); // Base options
+            const nrrOptions = getChartOptions(90); // Options with suggested min 90% for NRR
+
+            // Generate month labels dynamically.
+            const now = new Date();
+            const monthLabels = Array.from({ length: 12 }, (_, i) => { const d = new Date(now); d.setMonth(now.getMonth() - (11 - i)); const year = d.getFullYear().toString().slice(-2); const month = d.toLocaleString('default', { month: 'short' }); return (d.getMonth() === 0 || i === 0) ? `${month} '${year}` : month; });
+
+            // --- Sample Data (Replace with actual data!) ---
+            const renewalRateData = [94, 95, 95, 94, 96, 95, 96, 97, 96, 95, 97, 96];
+            const expansionRevenueData = [110, 112, 111, 114, 115, 113, 116, 118, 117, 115, 119, 118]; // NRR
+            const referralLeadsData = [20, 22, 25, 24, 28, 30, 29, 31, 35, 33, 30, 32]; // Count
+
+            // --- Create/Update Charts ---
+            // Get canvas context, create chart, store instance. Apply specific options.
+
+            // Renewal Rate Chart
+            const renewalCtx = document.getElementById('renewalRateChart')?.getContext('2d');
+            if (renewalCtx) {
+                chartInstances.renewalRate = new Chart(renewalCtx, {
+                    type: 'line',
+                    data: { labels: monthLabels, datasets: [getLineChartDatasetConfig(renewalRateData, 'Renewal Rate')] },
+                    // Custom options: Suggest min 90%, format Y-axis as percentage.
+                    options: { ...baseOptions, scales: { ...baseOptions.scales, y: { ...baseOptions.scales.y, suggestedMin: 90, ticks: { ...baseOptions.scales.y.ticks, callback: value => value + '%' } } } }
+                });
+            }
+
+            // Expansion Revenue (NRR) Chart
+            const expansionCtx = document.getElementById('expansionRevenueChart')?.getContext('2d');
+             if (expansionCtx) {
+                 chartInstances.expansionRevenue = new Chart(expansionCtx, {
+                     type: 'line',
+                     data: { labels: monthLabels, datasets: [getLineChartDatasetConfig(expansionRevenueData, 'NRR')] },
+                     // Use options with suggested min 90%, format Y-axis as percentage.
+                     options: { ...nrrOptions, scales: { ...nrrOptions.scales, y: { ...nrrOptions.scales.y, ticks: { ...nrrOptions.scales.y.ticks, callback: value => value + '%' } } } }
+                 });
+             }
+
+            // Referral Leads Chart
+            const referralCtx = document.getElementById('referralLeadsChart')?.getContext('2d');
+             if (referralCtx) {
+                 chartInstances.referralLeads = new Chart(referralCtx, {
+                     type: 'line',
+                     data: { labels: monthLabels, datasets: [getLineChartDatasetConfig(referralLeadsData, 'Referral Leads')] },
+                     // Use base options. Explicitly ensure y-axis doesn't start at zero if desired (default is false).
+                     options: { ...baseOptions, scales: { ...baseOptions.scales, y: { ...baseOptions.scales.y, beginAtZero: false } } }
+                 });
+             }
+
+             // --- Clean up potential old references ---
+             // Belt-and-suspenders: Ensure only keys for *this* dashboard exist in chartInstances.
+             // Necessary if code is merged/reused across different dashboard examples.
+             console.log("Cleaning up potentially stale chart instance keys...");
+             delete chartInstances.csatPostOnboarding;
+             delete chartInstances.adoptionRate;
+             delete chartInstances.retentionRate;
+             delete chartInstances.ttv; // Remove TTV if it existed from another example
+             delete chartInstances.usage; // Remove usage if it existed
+             delete chartInstances.sentiment; // Remove sentiment if it existed
+             delete chartInstances.milestone; // Remove milestone if it existed
+             delete chartInstances.csat; // Remove general CSAT if existed
+             delete chartInstances.nps; // Remove general NPS if existed
+             delete chartInstances.churn; // Remove general churn if existed
+             delete chartInstances.clv; // Remove general CLV if existed
+             // Keep only: renewalRate, expansionRevenue, referralLeads
+        }
+
+        // --- Download Functionality ---
+        // Captures the main dashboard area as a PNG.
+        function downloadDashboardAsPNG() {
+            // Check elements exist.
+            if (!dashboardContainer || !topButtonsWrapper) {
+                console.error("Download failed: Required elements not found!");
+                alert("Error: Could not find dashboard content to download.");
+                return;
+            }
+            console.log("Initiating Fan Metrics dashboard download...");
+
+            // --- HIDE BUTTONS ---
+            // Temporarily hide buttons during capture.
+            const originalButtonsDisplay = topButtonsWrapper.style.display;
+            topButtonsWrapper.style.display = 'none';
+
+            // --- Transparency Handling ---
+            const originalBodyBackground = bodyElement.style.backgroundColor;
+            bodyElement.style.backgroundColor = 'transparent';
+
+            // Force reflow.
+            window.getComputedStyle(dashboardContainer).getPropertyValue('width');
+
+            // --- Capture the dashboard container ---
+            html2canvas(dashboardContainer, {
+                backgroundColor: null, // Use element's background
+                useCORS: true,
+                logging: false,
+                scale: window.devicePixelRatio || 1 // High-res
+             })
+            .then(canvas => {
+                // --- Restore Styles (Success) ---
+                console.log("Dashboard captured.");
+                bodyElement.style.backgroundColor = originalBodyBackground; // Restore body bg
+                topButtonsWrapper.style.display = originalButtonsDisplay || ''; // Restore buttons
+
+                // --- Trigger Download ---
+                // Standard link-click routine with a specific filename.
+                const link = document.createElement('a');
+                link.download = 'fan_metrics_dashboard.png'; // Specific filename
+                link.href = canvas.toDataURL('image/png');
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                console.log("Download triggered.");
+            })
+            .catch(error => {
+                 // --- Restore Styles (Error) ---
+                 // ALWAYS restore styles on error!
+                 bodyElement.style.backgroundColor = originalBodyBackground;
+                 topButtonsWrapper.style.display = originalButtonsDisplay || '';
+
+                console.error('Error capturing Fan Metrics dashboard:', error);
+                alert('Sorry, could not download the dashboard image.');
+            });
+        }
+
+
+        // --- Event Listeners ---
+        // Wire up theme toggle button.
+        if (themeToggleButton) {
+             themeToggleButton.addEventListener('click', () => { applyTheme(currentTheme === 'light' ? 'dark' : 'light'); });
+        }
+        // Wire up download button.
+        if (downloadDashboardButton) {
+             downloadDashboardButton.addEventListener('click', downloadDashboardAsPNG);
+        }
+
+        // --- Initialization on DOM Load ---
+        // Set up the theme and render charts when the page structure is ready.
+        document.addEventListener('DOMContentLoaded', () => {
+            // Determine and apply initial theme.
+            const savedTheme = localStorage.getItem('dashboardTheme');
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            let initialTheme = 'light';
+            if (savedTheme) { initialTheme = savedTheme; }
+            else if (prefersDark) { initialTheme = 'dark'; }
+
+            // Apply theme without transition flash.
+            currentTheme = initialTheme; // Set global state
+            if (initialTheme === 'dark') {
+                bodyElement.classList.add('dark-theme');
+                 if(themeToggleButton) themeToggleButton.textContent = 'Switch to Light Mode';
+            } else {
+                bodyElement.classList.remove('dark-theme');
+                 if(themeToggleButton) themeToggleButton.textContent = 'Switch to Dark Mode';
+            }
+
+            // Render initial charts.
+            renderCharts();
+        });
+
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Collaboration Success Story: From Silos to Superstars</title>
+<style>
+    body { /* Basic body style - Clean slate, standard font */
+        margin: 0;
+        padding: 20px;
+        background-color: #ffffff;
+        font-family: sans-serif;
+    }
+
+    /* Wrapper for the action button */
+    .action-wrapper {
+        /* Centering the download button above the story. Easy access. */
+        text-align: center;
+        margin-bottom: 15px;
+        max-width: 800px; /* Keep width consistent with the box below */
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* Download Button Styling */
+    .download-button {
+        /* Consistent button style. Simple, functional. */
+        padding: 5px 10px;
+        background-color: #eee;
+        color: #333;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.8em;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+    .download-button:hover {
+        background-color: #ddd;
+        border-color: #bbb;
+    }
+
+    /* --- The main callout box for the story --- */
+    .callout-box {
+        /* Using the standard callout style. Makes the story stand out from other content. */
+        border: 2px solid #f0f0f0; /* Light gray border */
+        background-color: #f9f9f9; /* Very light gray background */
+        padding: 10px 10px 10px 10px; /* User padding */
+        margin: 0 auto; /* Center the box */
+        border-radius: 8px; /* Soft corners */
+        font-family: sans-serif; /* Match body */
+        max-width: 800px; /* Keep readable width */
+        text-align: center; /* Center the title initially */
+    }
+    /* --- END USER STYLE --- */
+
+    .callout-box h3 {
+        /* Story title style */
+        margin-top: 10px;
+        color: #333;
+        margin-bottom: 15px; /* Space before the story text */
+        display: inline-block; /* Allows centering with the emoji */
+    }
+    /* Pin the story title! */
+    .callout-box h3#callout-title::before {
+        content: "📌 "; /* Add the pin emoji - visual cue */
+    }
+
+    /* Style paragraphs and lists for readability within the box */
+    .callout-box p,
+    .callout-box ul {
+        /* Styling for the story text itself. Readability is crucial here. */
+        color: #333;
+        line-height: 1.6; /* Good spacing between lines */
+        margin-top: 0;
+        margin-bottom: 1em; /* Standard paragraph spacing */
+        text-align: left; /* Align story text left inside the centered box */
+        padding-left: 5px; /* Slight indent from box edge */
+        padding-right: 5px;
+        font-size: 0.95em; /* Slightly smaller text can work well here */
+    }
+    .callout-box ul {
+        /* Indent bullet points further for clear hierarchy */
+        padding-left: 30px;
+        margin-bottom: 1em; /* Ensure space after the list too */
+    }
+    .callout-box li {
+        /* Spacing between list items */
+        margin-bottom: 0.5em;
+    }
+    /* Remove bottom margin from the very last element in the box. Keeps spacing tight. */
+    .callout-box > :last-child {
+        margin-bottom: 0;
+    }
+</style>
+</head>
+<body>
+
+<div class="action-wrapper">
+    <button id="download-story-button" class="download-button">Download Story PNG</button>
+</div>
+
+<div class="callout-box" id="downloadable-content">
+    <h3 id="callout-title">Collaboration Success Story: From Silos to Superstars</h3>
+    <p>
+        At a global tech company, one cloud support team faced the all-too-familiar challenge: siloed communication, inconsistent follow-through, and frustrated customers. Sound familiar?
+    </p>
+    <p>
+        Determined to break the cycle, the team piloted a simple idea—weekly collaborative huddles. No slides. No lengthy status updates. Just 30 minutes each week where engineers, account managers, and support leads came together to swarm top issues, share learnings, and align on priorities.
+    </p>
+    <p>
+        The impact? Swift and surprising.<br> Within the first quarter:
+    </p>
+    <ul>
+        <li>Customer issue resolution time dropped by 30%.</li> <li>Internal escalations were cut in half.</li> <li>A culture of transparency and mutual support began to emerge.</li> </ul>
+    <p>
+        One engineer summed it up best: <em>"It feels like we're finally rowing in the same direction. Problems don’t bounce—they get solved."</em>
+    </p>
+    <p>
+        Even better, morale shot up. Team members reported feeling more connected, empowered, and valued. They began proactively jumping in to help others before being asked.
+    </p>
+    <p>
+        The huddles became a ritual—anchoring team rhythm, building trust, and reminding everyone that no one solves cloud problems alone.
+    </p>
+    <p>
+        <strong>Takeaway:</strong> You don’t need a massive overhaul to create meaningful change. Sometimes, all it takes is a calendar invite and a shared sense of purpose.
+    </p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+    // --- Element References ---
+    // Grab the button, the story box content, the title element, and the body.
+    const downloadButton = document.getElementById('download-story-button');
+    const contentToDownload = document.getElementById('downloadable-content'); // This is the callout box
+    const calloutTitleElement = document.getElementById('callout-title'); // For the filename
+    const bodyElement = document.body; // For background handling
+
+    // --- DOWNLOAD FUNCTIONALITY ---
+    // Function called when the download button is clicked.
+    function downloadContentAsPNG() {
+        // First things first: make sure the elements we need actually exist. Bail out if not.
+        if (!contentToDownload || !calloutTitleElement) {
+            console.error("Download failed: Content box or title element not found!");
+            alert("Couldn't find the content to download.");
+            return;
+        }
+        console.log("Starting PNG download for story...");
+
+        // Button is outside the capture area, so no need to hide/show it.
+
+        // --- Prepare for Capture ---
+        // Make body transparent during capture so only the box background shows. Store original first!
+        const originalBodyBackground = bodyElement.style.backgroundColor;
+        bodyElement.style.backgroundColor = 'transparent';
+
+        // Force style computation - belt-and-suspenders approach before screenshotting complex layouts.
+        window.getComputedStyle(contentToDownload).getPropertyValue('width');
+
+        // --- Capture the Callout Box ---
+        html2canvas(contentToDownload, {
+            backgroundColor: null, // Let the box's own background show through
+            useCORS: true,         // Handle potential cross-origin issues if images were used
+            logging: false,        // Suppress console logs from html2canvas
+            scale: window.devicePixelRatio || 1 // Capture at screen resolution for clarity
+         })
+        .then(canvas => {
+            // --- Restore Background (on success) ---
+            console.log("Story content captured.");
+            bodyElement.style.backgroundColor = originalBodyBackground; // Put it back!
+
+            // --- Generate Filename ---
+            // Create a clean filename from the story title.
+            // 1. Get text, remove the pin, trim whitespace.
+            const titleText = calloutTitleElement.textContent.replace("📌 ", "").trim();
+            // 2. Use title or a default fallback name.
+            let filename = titleText ? titleText : 'success_story';
+            // 3. Sanitize: remove invalid chars, replace spaces with '_', limit length (~60 chars is safe).
+            filename = filename.replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, '_').substring(0, 60);
+            filename += '.png'; // Add extension
+            console.log(`Using filename: ${filename}`);
+
+            // --- Trigger Download ---
+            // Standard method: create temp link, set data URL, click, remove.
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            console.log("Download link clicked and removed.");
+        })
+        .catch(error => {
+             // --- Restore Background (on error) ---
+             // CRITICAL: Always restore background, even if capture fails!
+             bodyElement.style.backgroundColor = originalBodyBackground;
+
+            console.error('Error capturing content:', error);
+            alert('Sorry, could not download the story image. An error occurred.');
+        });
+    }
+
+    // --- EVENT LISTENER ---
+    // Attach the download function to the button click. Check button exists first.
+    if (downloadButton) {
+        downloadButton.addEventListener('click', downloadContentAsPNG);
+    } else {
+        console.error("Download button element not found in the DOM!");
+    }
+
+</script>
+
+</body>
+</html>

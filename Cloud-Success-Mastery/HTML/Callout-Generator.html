@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Generic Callout Creator</title>
+<style>
+    body { /* Basic body style - clean slate */
+        margin: 0;
+        padding: 20px;
+        background-color: #ffffff; /* White bg for clean capture */
+        font-family: sans-serif; /* Keep it simple */
+    }
+
+    /* Wrapper for controls - Grouping input fields and buttons */
+    .controls-wrapper {
+        max-width: 800px; /* Match callout box width for alignment */
+        margin: 0 auto 20px auto; /* Center and add space below controls, before preview */
+        padding: 15px;
+        border: 1px solid #ddd; /* Visual separation for controls */
+        border-radius: 8px;
+        background-color: #fdfdfd; /* Slightly off-white */
+    }
+    .form-group {
+        /* Structure for label + input pairs */
+        margin-bottom: 15px;
+        text-align: center; /* Center labels and inputs within the group */
+    }
+    .form-group label {
+        /* Clear labels are non-negotiable. Tell people what goes where. */
+        display: block; /* Put label on its own line */
+        margin-bottom: 5px;
+        font-weight: bold;
+        font-size: 0.9em;
+        color: #555;
+    }
+    .form-group input[type="text"],
+    .form-group textarea {
+        /* Make input fields easy to use. Good width, standard styles. */
+        width: 90%; /* Use most of the container width */
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-family: sans-serif; /* Inherit base font */
+        font-size: 1em;
+    }
+     .form-group textarea {
+        min-height: 80px; /* Give enough space for a few lines by default */
+        /* Crucial: Let users see their line breaks while typing. WYSIWYG matters! */
+        white-space: pre-wrap;
+        overflow-wrap: break-word; /* Handle long words without breaking layout */
+     }
+    .controls-buttons {
+        /* Center the action buttons */
+        text-align: center;
+        margin-top: 10px; /* Space above buttons */
+    }
+    .update-button,
+    .download-button { /* Style both buttons similarly for visual consistency */
+        padding: 8px 15px;
+        background-color: #eee;
+        color: #333;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.9em;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        transition: background-color 0.3s ease, border-color 0.3s ease; /* Smooth hover */
+        margin: 5px; /* Space between/around buttons */
+    }
+    .update-button:hover,
+    .download-button:hover {
+        background-color: #ddd;
+        border-color: #bbb;
+    }
+
+    /* Callout Box Styling - This is the preview AND download target */
+    .callout-box {
+        border: 2px solid #f0f0f0; /* Standard light border */
+        background-color: #f9f9f9; /* Standard light background */
+        padding: 25px 20px 25px 20px; /* More padding inside the box */
+        margin: 0 auto; /* Center horizontally */
+        border-radius: 8px; /* Soft corners */
+        font-family: sans-serif; /* Match base font */
+        max-width: 800px; /* Keep it constrained */
+        min-height: 150px; /* Prevent collapsing when empty */
+        text-align: center; /* Center the inline-block title and text block */
+    }
+    /* Updated H3 style for the preview title */
+    .callout-box h3#callout-title {
+        margin-top: 0;
+        color: #333;
+        margin-bottom: 15px; /* Space between title and text */
+        font-size: 1.2em; /* Make title slightly larger */
+        min-height: 1.2em; /* Ensure space even if title is short */
+        display: inline-block; /* Key for centering via parent text-align */
+    }
+    /* Add the pin automatically - consistent visual cue */
+    .callout-box h3#callout-title::before {
+        content: "📌 "; /* The pin emoji and a space */
+    }
+
+    /* Styling for the main paragraph text in the preview */
+    .callout-box p#callout-text {
+        color: #333;
+        line-height: 1.6; /* Readability */
+        text-align: center; /* Center the text block itself */
+        margin: 0 auto; /* Required for centering block element */
+        padding: 0 1em; /* Padding left/right */
+        max-width: 95%; /* Prevent text hitting edges */
+        min-height: 1.6em; /* Reserve space */
+        /* This is magic: Preserves line breaks entered in the textarea */
+        white-space: pre-line;
+        /* Tries to balance lines of centered text - looks better */
+        text-wrap: balance;
+    }
+    /* Remove bottom margin from the very last element (the paragraph) inside the box */
+    .callout-box > :last-child {
+        margin-bottom: 0;
+    }
+</style>
+</head>
+<body>
+
+<div class="controls-wrapper">
+    <div class="form-group">
+        <label for="new-title-input">Enter Title:</label>
+        <input type="text" id="new-title-input"> </div>
+    <div class="form-group">
+        <label for="new-text-input">Enter Main Text (Press Enter for line breaks):</label>
+        <textarea id="new-text-input" rows="4"></textarea> </div>
+    <div class="controls-buttons">
+        <button id="update-content-button" class="update-button">Update Callout</button> <button id="download-callout-button" class="download-button">Download Callout PNG</button> </div>
+</div>
+
+<div class="callout-box" id="downloadable-content">
+    <h3 id="callout-title">Your Title Here</h3>
+    <p id="callout-text">
+Your main content goes here.
+Press Enter for line breaks.
+
+They will be preserved!
+    </p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+    // --- Element References ---
+    // Grab all the interactive bits we need to work with.
+    const downloadButton = document.getElementById('download-callout-button');
+    const contentToDownload = document.getElementById('downloadable-content'); // The preview box
+    const bodyElement = document.body; // For background manipulation
+    // Form elements
+    const newTitleInput = document.getElementById('new-title-input');
+    const newTextInput = document.getElementById('new-text-input');
+    const updateContentButton = document.getElementById('update-content-button');
+    // Target elements in the preview box
+    const calloutTitleElement = document.getElementById('callout-title');
+    const calloutTextElement = document.getElementById('callout-text');
+
+    // --- UPDATE CONTENT FUNCTIONALITY ---
+    // Takes values from input fields and updates the preview box content. Instant feedback!
+    function updateContent() {
+        console.log("Updating callout preview...");
+        // Update Title - Check elements exist first!
+        if (newTitleInput && calloutTitleElement) {
+            calloutTitleElement.textContent = newTitleInput.value; // Set text content
+        } else {
+             console.error("Missing element for title update!");
+        }
+        // Update Main Text - Check elements exist first!
+        if (newTextInput && calloutTextElement) {
+            // Use textContent to correctly interpret line breaks from textarea value
+            calloutTextElement.textContent = newTextInput.value;
+        } else {
+             console.error("Missing element for text update!");
+        }
+    }
+
+    // --- DOWNLOAD FUNCTIONALITY ---
+    // Captures the preview box as a PNG image.
+    function downloadContentAsPNG() {
+        // Make sure the box and title element (for filename) exist.
+        if (!contentToDownload || !calloutTitleElement) {
+            console.error("Cannot download: Required elements (content box or title) not found!");
+            alert("Error: Could not find content to download.");
+            return;
+        }
+        console.log("Initiating PNG download for callout...");
+
+        // --- Transparency Handling ---
+        // Standard procedure: store original bg, set transparent, capture, restore.
+        const originalBodyBackground = bodyElement.style.backgroundColor;
+        bodyElement.style.backgroundColor = 'transparent';
+
+        // Force reflow/style calculation before capturing.
+        window.getComputedStyle(contentToDownload).getPropertyValue('width');
+
+        // --- Capture the callout box ---
+        html2canvas(contentToDownload, {
+            backgroundColor: null, // Needed for transparency
+            useCORS: true,         // In case content ever includes external images
+            logging: false,        // Keep console quiet
+            scale: window.devicePixelRatio || 1 // High-res capture
+         })
+        .then(canvas => {
+            // --- Restore Background ---
+            console.log("Callout captured.");
+            bodyElement.style.backgroundColor = originalBodyBackground; // Put it back!
+
+            // --- Generate Filename ---
+            // Use the *current* text in the title element for the filename.
+            const titleText = calloutTitleElement.textContent.trim(); // Trim whitespace
+            let filename = titleText ? titleText : 'callout'; // Use title or a default fallback
+            // Sanitize the filename - remove bad characters, replace spaces, limit length.
+            filename = filename.replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, '_').substring(0, 50);
+            filename += '.png'; // Add extension
+            console.log(`Generated filename: ${filename}`);
+
+            // --- Trigger Download ---
+            // Create a temporary link, set data, click, remove.
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            console.log("Download triggered.");
+        })
+        .catch(error => {
+             // --- Restore Background (on Error) ---
+             // Critical: Always restore the background!
+             bodyElement.style.backgroundColor = originalBodyBackground;
+
+            console.error('Error capturing content:', error);
+            alert('Sorry, could not download the callout image. An error occurred.');
+        });
+    }
+
+    // --- EVENT LISTENERS ---
+    // Hook up the buttons to their respective functions.
+    if (downloadButton) {
+        downloadButton.addEventListener('click', downloadContentAsPNG);
+    } else {
+        console.error("Download button not found!");
+    }
+    // Connect the "Update Callout" button
+    if (updateContentButton) {
+         updateContentButton.addEventListener('click', updateContent);
+    } else {
+         console.error("Update content button not found!");
+    }
+
+    // --- Initial Load ---
+    // Pre-fill the input fields with the default content shown in the preview box.
+    // Makes it easier for the user to see what they are editing.
+    if (newTitleInput && calloutTitleElement) {
+         newTitleInput.value = calloutTitleElement.textContent.trim();
+    }
+     if (newTextInput && calloutTextElement) {
+         // Use textContent to grab the text exactly as rendered (with line breaks)
+         newTextInput.value = calloutTextElement.textContent.trim();
+     }
+
+</script>
+
+</body>
+</html>

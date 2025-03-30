@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Real-Life Tip Editor</title>
+<style>
+    body { /* Basic body style */
+        margin: 0;
+        padding: 20px;
+        background-color: #ffffff; /* White bg for capture */
+        font-family: sans-serif; /* Keep it simple */
+    }
+
+    /* Wrapper for controls (input and buttons) */
+    .controls-wrapper {
+        max-width: 800px; /* Match callout box width */
+        margin: 0 auto 15px auto; /* Center and add space below controls */
+        text-align: center; /* Center inline elements */
+    }
+    /* Wrapper for the download button (can be combined with above if desired) */
+    .action-wrapper {
+         margin-bottom: 15px; /* Space below download button */
+    }
+    /* Styling for the input area */
+    .form-wrapper label {
+        display: block; /* Label on its own line */
+        margin-bottom: 5px;
+        font-weight: bold;
+        font-size: 0.9em;
+        color: #555;
+    }
+    .form-wrapper textarea {
+        /* Make the input area easy to use */
+        width: 90%; /* Use most available width */
+        min-height: 60px; /* Decent starting height */
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-family: sans-serif; /* Inherit base font */
+        font-size: 1em;
+        margin-bottom: 10px; /* Space below textarea, above update button */
+        /* Key for usability: Show line breaks AS the user types them */
+        white-space: pre-wrap;
+        overflow-wrap: break-word; /* Handle long words gracefully */
+    }
+    /* Styling for Update and Download buttons */
+    .update-button,
+    .download-button {
+        padding: 6px 12px; /* Slightly smaller padding */
+        background-color: #eee;
+        color: #333;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.9em;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        transition: background-color 0.3s ease, border-color 0.3s ease; /* Smooth hover */
+        margin: 0 5px; /* Space buttons if they are side-by-side */
+    }
+    .update-button:hover,
+    .download-button:hover {
+        background-color: #ddd;
+        border-color: #bbb;
+    }
+
+    /* Callout Box Styling - This is the preview area */
+    .callout-box {
+        border: 2px solid #f0f0f0; /* Standard light border */
+        background-color: #f9f9f9; /* Standard light background */
+        padding: 20px 20px 20px 20px; /* Consistent padding */
+        margin: 0 auto; /* Center horizontally */
+        border-radius: 8px; /* Soft corners */
+        font-family: sans-serif; /* Match body */
+        max-width: 800px; /* Keep width reasonable */
+    }
+    .callout-box h3 {
+        /* Title style */
+        margin-top: 0;
+        color: #333;
+        text-align: center;
+        margin-bottom: 15px; /* Space below title */
+        font-size: 1.1em;
+    }
+     /* Add pin via CSS */
+     .callout-box h3::before {
+          content: "📌 "; /* Pin the tip! */
+     }
+    /* Updated paragraph style for the tip text */
+    .callout-box p#tip-text { /* Targeting the specific paragraph */
+        color: #333;
+        line-height: 1.6; /* Readability */
+        text-align: center; /* Center the lines of text */
+        margin: 0 auto; /* Center the text block */
+        padding: 0 1em; /* Padding left/right */
+        max-width: 90%; /* Prevent text hitting edges */
+        font-style: italic; /* Italicize the tip text */
+        min-height: 1.6em; /* Ensure space even for short tips */
+        /* Helps balance ragged lines in centered text */
+        text-wrap: balance;
+
+        /* --- CRUCIAL: Preserve line breaks from the textarea --- */
+        white-space: pre-line;
+        /* This preserves line breaks from the source text (\n) */
+        /* while collapsing other whitespace and allowing normal wrapping */
+    }
+
+    /* Remove bottom margin from the last element (the tip paragraph) */
+    .callout-box > :last-child {
+        margin-bottom: 0;
+    }
+</style>
+</head>
+<body>
+
+<div class="controls-wrapper">
+    <div class="form-wrapper">
+        <label for="new-tip-input">Enter New Tip Text (Press Enter for line breaks):</label>
+        <textarea id="new-tip-input" rows="3"></textarea> <button id="update-tip-button" class="update-button">Update Tip</button> </div>
+    <div class="action-wrapper">
+        <button id="download-tip" class="download-button">Download Tip PNG</button> </div>
+</div>
+
+<div class="callout-box" id="downloadable-content">
+    <h3>📌 Real-Life Tip:</h3> <p id="tip-text">
+Create regular opportunities (monthly or quarterly reviews) for your team to honestly discuss successes, failures, and lessons learned.
+
+Continuously refine your approach. </p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+    // --- Element References ---
+    // Grab all the elements we need to interact with.
+    const downloadButton = document.getElementById('download-tip');
+    const contentToDownload = document.getElementById('downloadable-content'); // The preview box
+    const bodyElement = document.body; // For background handling
+    // Form elements
+    const newTipInput = document.getElementById('new-tip-input'); // Textarea input
+    const updateTipButton = document.getElementById('update-tip-button'); // Update button
+    const tipTextElement = document.getElementById('tip-text'); // The paragraph where the tip is displayed
+
+    // --- UPDATE TEXT FUNCTIONALITY ---
+    // Function to take text from the textarea and put it into the preview paragraph.
+    function updateTipText() {
+        // Check elements exist before trying to use them!
+        if (newTipInput && tipTextElement) {
+            // Use textContent - it correctly handles newline characters (\n) from the textarea value.
+            // The CSS 'white-space: pre-line' takes care of rendering those newlines.
+            tipTextElement.textContent = newTipInput.value;
+            console.log("Tip preview updated.");
+        } else {
+             console.error("Missing input or target element for tip update!");
+        }
+    }
+
+    // --- DOWNLOAD FUNCTIONALITY ---
+    // Function to capture the preview box as a PNG image.
+    function downloadContentAsPNG() {
+        // Make sure the preview box exists.
+        if (!contentToDownload) {
+            console.error("Cannot download: Content container not found!");
+            alert("Error: Could not find content to download.");
+            return; // Stop if element missing
+        }
+        console.log("Initiating PNG download for tip...");
+
+        // --- Prepare for Capture ---
+        // Standard background transparency trick.
+        const originalBodyBackground = bodyElement.style.backgroundColor;
+        bodyElement.style.backgroundColor = 'transparent';
+
+        // Force style calculation.
+        window.getComputedStyle(contentToDownload).getPropertyValue('width');
+
+        // --- Capture the Callout Box ---
+        html2canvas(contentToDownload, {
+            backgroundColor: null, // Use element's background, allow transparency
+            useCORS: true,         // Standard practice
+            logging: false,        // Keep console quiet
+            scale: window.devicePixelRatio || 1 // Capture at screen resolution
+         })
+        .then(canvas => {
+            // --- Restore Background (Success Case) ---
+            console.log("Tip content captured.");
+            bodyElement.style.backgroundColor = originalBodyBackground; // Put background back!
+
+            // --- Trigger Download ---
+            // Create temp link, set filename, set data URL, click, remove.
+            const link = document.createElement('a');
+            link.download = 'real_life_tip.png'; // Fixed filename for this specific tip
+            link.href = canvas.toDataURL('image/png');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            console.log("Download triggered.");
+        })
+        .catch(error => {
+             // --- Restore Background (Error Case) ---
+             // ALWAYS restore the background, even on failure!
+             bodyElement.style.backgroundColor = originalBodyBackground;
+
+            console.error('Error capturing tip content:', error);
+            alert('Sorry, could not download the tip image. An error occurred.');
+        });
+    }
+
+    // --- EVENT LISTENERS ---
+    // Hook up the download button.
+    if (downloadButton) {
+        downloadButton.addEventListener('click', downloadContentAsPNG);
+    } else {
+        console.error("Download button not found!");
+    }
+    // Hook up the update button.
+    if (updateTipButton) {
+         updateTipButton.addEventListener('click', updateTipText);
+    } else {
+         console.error("Update tip button not found!");
+    }
+
+    // --- Initial Load ---
+    // Populate the textarea with the initial tip text from the preview paragraph.
+    // This makes it easy for the user to edit the default text.
+    if (newTipInput && tipTextElement) {
+         // textContent preserves the line breaks correctly for setting the textarea value.
+         newTipInput.value = tipTextElement.textContent.trim();
+         console.log("Initial tip text loaded into editor.");
+    }
+
+</script>
+
+</body>
+</html>

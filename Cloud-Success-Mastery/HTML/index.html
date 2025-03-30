@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>HTML Demos - Book Resources</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; }
+    a { color: blue; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .modal {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center;
+    }
+    iframe {
+      width: 90vw; height: 90vh; border: none; background: #fff;
+    }
+    .modal-content {
+      position: relative; background: #fff; padding: 1rem;
+    }
+    .close {
+      position: absolute; top: 10px; right: 15px; cursor: pointer;
+      font-size: 1.2rem; font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>📂 Book HTML Visualizations</h1>
+  <ul id="fileList"></ul>
+
+  <div class="modal" id="popupModal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">×</span>
+      <iframe id="popupFrame"></iframe>
+    </div>
+  </div>
+
+  <script>
+    const htmlFiles = [
+      // manually list your HTML files here
+      "customer-journey-map.html",
+      "support-lifecycle.html",
+      "cloud-success-maturity-model.html"
+    ];
+
+    const fileList = document.getElementById("fileList");
+
+    htmlFiles.forEach(file => {
+      const li = document.createElement("li");
+      const a = document.createElement("a");
+      a.textContent = file;
+      a.href = "#";
+      a.onclick = () => openModal(file);
+      li.appendChild(a);
+      fileList.appendChild(li);
+    });
+
+    function openModal(file) {
+      const modal = document.getElementById("popupModal");
+      const frame = document.getElementById("popupFrame");
+      frame.src = file;
+      modal.style.display = "flex";
+    }
+
+    function closeModal() {
+      document.getElementById("popupModal").style.display = "none";
+      document.getElementById("popupFrame").src = "";
+    }
+
+    // Optional: Close modal on outside click
+    document.getElementById("popupModal").addEventListener("click", function(e) {
+      if (e.target === this) closeModal();
+    });
+  </script>
+</body>
+</html>

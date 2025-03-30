@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Table: Traits of a Customer Success Superstar</title>
+<style>
+    body { /* Basic body style - needed for background reset */
+        margin: 0;
+        padding: 20px;
+        background-color: #ffffff; /* Default background */
+        font-family: sans-serif; /* Simple, readable */
+    }
+
+    /* Wrapper for the action button above the box */
+    .action-wrapper {
+        text-align: center; /* Center the button */
+        margin-bottom: 15px; /* Space below the button */
+        /* Optional: Constrain width like callout box if desired */
+        /* max-width: 800px; */
+        /* margin-left: auto; */
+        /* margin-right: auto; */
+    }
+
+    /* Download Button Styling */
+    .download-button {
+        /* Standard small button style */
+        padding: 5px 10px;
+        background-color: #eee;
+        color: #333;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.8em;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        transition: background-color 0.3s ease, border-color 0.3s ease; /* Smooth hover */
+    }
+    .download-button:hover {
+        background-color: #ddd;
+        border-color: #bbb;
+    }
+
+    /* Callout Box Styling - Container for the table and caption */
+    .callout-box {
+        border: 2px solid #f0f0f0; /* Light border */
+        background-color: #f9f9f9; /* Light background */
+        padding: 10px 10px 10px 10px; /* Keep padding consistent */
+        margin: 0 auto; /* Center horizontally */
+        border-radius: 8px; /* Soft corners */
+        font-family: sans-serif; /* Match body */
+        max-width: 800px; /* Keep width reasonable */
+    }
+    .callout-box h3 {
+        /* Title inside the box */
+        margin-top: 0; /* Remove default margin */
+        color: #333;
+        text-align: center; /* Center the title */
+        margin-bottom: 15px; /* Space below title, above table */
+    }
+    /* Add the pin automatically to the title */
+    .callout-box h3#callout-title::before {
+        content: "📌 "; /* The pin emoji and a space */
+    }
+    .comparison-table { /* Specific class name for this table */
+        /* Table styling - make the comparison clear */
+        width: 100%;
+        border-collapse: collapse; /* Clean lines */
+        margin-bottom: 15px; /* Space between table and the caption below */
+    }
+    .comparison-table th,
+    .comparison-table td {
+        /* Cell styling - padding for space, border for structure */
+        border: 1px solid #ddd;
+        padding: 10px;
+        text-align: left;
+        vertical-align: top; /* Align top looks better if text wraps */
+    }
+    .comparison-table th {
+        /* Header styling - make columns distinct */
+        background-color: #e9e9e9;
+        font-weight: bold;
+    }
+    /* Optional: Zebra striping for readability */
+    .comparison-table tr:nth-child(even) {
+        background-color: #fdfdfd; /* Subtle striping */
+    }
+    /* Styling for the caption below the table */
+    .callout-caption {
+        text-align: center; /* Center the caption */
+        font-style: italic; /* Italicize for emphasis */
+        color: #555; /* Slightly muted text color */
+        font-size: 0.9em; /* Slightly smaller font */
+        margin-bottom: 0; /* Remove bottom margin as it's the last element */
+    }
+</style>
+</head>
+<body>
+
+<div class="action-wrapper">
+    <button id="download-traits-button" class="download-button">Download Traits PNG</button>
+</div>
+
+<div class="callout-box" id="downloadable-content">
+    <h3 id="callout-title">Traits of a Customer Success Superstar</h3>
+    <table class="comparison-table">
+        <thead>
+            <tr>
+                <th>Must-Have Traits</th> <th>Nice-to-Have Skills</th> </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Empathy</td> <td>Cloud Technology Background</td> </tr>
+            <tr>
+                <td>Curiosity</td> <td>Previous Support Experience</td> </tr>
+            <tr>
+                <td>Resilience</td> <td>Relevant Certifications</td> </tr>
+            <tr>
+                <td>Collaboration</td> <td>Advanced Technical Skills</td> </tr>
+            </tbody>
+    </table>
+    <p class="callout-caption">Hire for column one, train for column two.</p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+    // --- Element References ---
+    // Grab the button, the content box (callout), the title, and the body.
+    const downloadButton = document.getElementById('download-traits-button');
+    const contentToDownload = document.getElementById('downloadable-content'); // The whole callout box
+    const calloutTitleElement = document.getElementById('callout-title'); // Needed for filename
+    const bodyElement = document.body; // For background manipulation
+
+    // --- DOWNLOAD FUNCTIONALITY ---
+    // Function to capture the content box as a PNG image.
+    function downloadContentAsPNG() {
+        // Sanity check: Ensure the content box and title element exist.
+        if (!contentToDownload || !calloutTitleElement) {
+            console.error("Cannot download: Required elements (content box or title) not found!");
+            alert("Error: Could not find content to download.");
+            return; // Stop if elements are missing
+        }
+        console.log("Initiating PNG download for traits table...");
+
+        // Button is outside the capture area, no hiding/showing needed.
+
+        // --- Prepare for Capture ---
+        // Standard background transparency trick. Store original, set transparent, capture, restore.
+        const originalBodyBackground = bodyElement.style.backgroundColor;
+        bodyElement.style.backgroundColor = 'transparent';
+
+        // Force style calculation - helps prevent rendering issues.
+        window.getComputedStyle(contentToDownload).getPropertyValue('width');
+
+        // --- Capture the Callout Box (including table and caption) ---
+        html2canvas(contentToDownload, {
+            backgroundColor: null, // Use element's background, allow transparency
+            useCORS: true,         // Standard practice
+            logging: false,        // Keep console quiet
+            scale: window.devicePixelRatio || 1 // Capture at screen resolution
+         })
+        .then(canvas => {
+            // --- Restore Background (Success Case) ---
+            console.log("Traits content captured.");
+            bodyElement.style.backgroundColor = originalBodyBackground; // Put the background back!
+
+            // --- Generate Filename ---
+            // Create a clean filename from the title.
+            // 1. Get title text, remove pin, trim whitespace.
+            const titleText = calloutTitleElement.textContent.replace("📌 ", "").trim();
+            // 2. Use title or a specific default fallback name for this table.
+            let filename = titleText ? titleText : 'cs_superstar_traits';
+            // 3. Sanitize: remove bad chars, replace spaces, limit length.
+            filename = filename.replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, '_').substring(0, 60);
+            filename += '.png'; // Add extension
+            console.log(`Generated filename: ${filename}`);
+
+            // --- Trigger Download ---
+            // Standard link-click method.
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            console.log("Download triggered.");
+        })
+        .catch(error => {
+             // --- Restore Background (Error Case) ---
+             // ALWAYS restore the background, even if capture fails!
+             bodyElement.style.backgroundColor = originalBodyBackground;
+
+            console.error('Error capturing traits content:', error);
+            alert('Sorry, could not download the traits image. An error occurred.');
+        });
+    }
+
+    // --- EVENT LISTENER ---
+    // Attach the download function to the button click. Check button exists.
+    if (downloadButton) {
+        downloadButton.addEventListener('click', downloadContentAsPNG);
+    } else {
+        console.error("Download button element not found!");
+    }
+
+</script>
+
+</body>
+</html>

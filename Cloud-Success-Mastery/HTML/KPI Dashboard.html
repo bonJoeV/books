@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Success Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <style>
+        /* --- Theme Variables --- */
+        /* Setting up colors with variables makes life easier, especially for theme switching */
+        :root {
+            /* Light Theme (Default) */
+            --bg-color: #f8f9fa;
+            --card-bg-color: #ffffff;
+            --text-color: #212529;
+            --heading-color: #212529;
+            --primary-accent: #0d6efd; /* Blue */
+            --secondary-accent: #0dcaf0; /* Cyan */
+            --border-color: #dee2e6;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --green-light: #198754;
+            --yellow-light: #ffc107;
+            --red-light: #dc3545;
+            /* Chart Specific - Light */
+            --chart-axis-text: '#495057';
+            --chart-grid-line: 'rgba(0, 0, 0, 0.1)';
+            --chart-axis-line: '#ced4da';
+            --chart-point-border: '#ffffff';
+            --chart-tooltip-bg: 'rgba(0, 0, 0, 0.8)';
+            --chart-tooltip-text: '#ffffff';
+        }
+
+        .dark-theme {
+            /* Dark Theme Overrides */
+            --bg-color: #121212;
+            --card-bg-color: #1e1e1e;
+            --text-color: #e0e0e0;
+            --heading-color: #ffffff;
+            --primary-accent: #bb86fc; /* Purple */
+            --secondary-accent: #03dac6; /* Teal */
+            --border-color: #333333;
+            --shadow-color: rgba(0, 0, 0, 0.2);
+            --green-light: #4CAF50;
+            --yellow-light: #FFC107;
+            --red-light: #F44336;
+             /* Chart Specific - Dark */
+            --chart-axis-text: '#e0e0e0';
+            --chart-grid-line: 'rgba(255, 255, 255, 0.2)';
+            --chart-axis-line: '#aaaaaa';
+            --chart-point-border: '#bb86fc'; /* Match line color */
+        }
+        /* --- End Theme Variables --- */
+
+
+        body {
+            /* Basic body setup. Colors driven by CSS variables. */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; /* Clean system fonts */
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6; /* Readability */
+            transition: background-color 0.3s ease, color 0.3s ease; /* Smooth theme changes */
+        }
+
+         /* Wrapper for top-right buttons */
+        .top-buttons {
+            /* Stick buttons top-right. Accessible but out of the way. */
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px; /* Space between buttons */
+            z-index: 10; /* Keep on top */
+        }
+
+        /* Shared style for buttons in the top-right */
+        .theme-toggle-button,
+        .download-button {
+            /* Consistent button look & feel */
+            padding: 8px 12px;
+            background-color: var(--card-bg-color);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            box-shadow: 0 2px 4px var(--shadow-color);
+            transition: opacity 0.3s ease, background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; /* Transition all the things */
+        }
+        .theme-toggle-button:hover,
+        .download-button:hover {
+            opacity: 0.8; /* Simple hover feedback */
+        }
+
+
+        .dashboard-container {
+            /* Main content container */
+            max-width: 1200px;
+            margin: 20px auto; /* Center it */
+            padding: 20px;
+            padding-top: 80px; /* Extra top padding to avoid overlap with absolute buttons */
+            position: relative; /* Positioning context */
+        }
+
+        h1 {
+            /* Main dashboard title */
+            color: var(--heading-color);
+            text-align: center;
+            margin-bottom: 40px; /* Space before metrics */
+        }
+
+        .metrics-grid {
+            /* Grid layout for the cards */
+            display: flex;
+            flex-wrap: wrap; /* Allow cards to wrap */
+            justify-content: center; /* Center cards horizontally */
+            gap: 15px; /* Space between cards */
+            padding: 0 10px; /* Prevent touching edges */
+        }
+
+        .metric-card {
+            /* Individual metric card styling */
+            background-color: var(--card-bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px; /* Soft corners */
+            padding: 20px;
+            box-shadow: 0 4px 8px var(--shadow-color); /* Give depth */
+            display: flex;
+            flex-direction: column; /* Stack content vertically */
+            align-items: center; /* Center content */
+            text-align: center;
+            flex: 0 1 320px; /* Control base size, allow flex */
+            transition: background-color 0.3s ease, border-color 0.3s ease; /* Theme transition */
+        }
+
+        .metric-card h2 {
+            /* Card title styling */
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: var(--primary-accent); /* Use theme accent */
+            font-size: 1.3em; /* Slightly smaller title */
+            width: 100%;
+            /* Handle long titles gracefully */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+             min-height: 1.6em; /* Consistent height */
+        }
+
+        .current-value-section {
+            /* Container for the big number and indicators */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            width: 100%;
+        }
+
+        .current-value {
+            /* The main metric value - make it pop */
+            font-size: 2.2em;
+            font-weight: bold;
+            color: var(--heading-color);
+            margin-right: 10px; /* Space before indicators */
+        }
+
+        .traffic-light {
+            /* R/Y/G status indicator */
+            width: 18px;
+            height: 18px;
+            border-radius: 50%; /* Circle */
+            display: inline-block;
+            margin-right: 8px; /* Space before trend */
+            border: 1px solid rgba(0,0,0,0.1); /* Subtle border */
+        }
+        /* Colors set by class */
+        .traffic-light.green { background-color: var(--green-light); }
+        .traffic-light.yellow { background-color: var(--yellow-light); }
+        .traffic-light.red { background-color: var(--red-light); }
+
+        .trend-indicator {
+            /* Up/Down/Stable trend arrow */
+            font-size: 1.4em;
+        }
+        /* Colors set by class */
+        .trend-indicator.up { color: var(--green-light); }
+        .trend-indicator.down { color: var(--red-light); }
+        .trend-indicator.stable { color: var(--yellow-light); }
+
+        .chart-container {
+            /* Container for the mini trend chart */
+            width: 100%;
+            height: 160px; /* Fixed chart height */
+            margin-bottom: 15px; /* Space before action link */
+        }
+
+        .action-link a {
+            /* Styling for the actionable link below the chart */
+            color: var(--secondary-accent); /* Use secondary accent */
+            text-decoration: none;
+            font-weight: bold;
+            border: 1px solid var(--secondary-accent);
+            padding: 7px 12px; /* Slightly smaller padding */
+            border-radius: 5px;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; /* Smooth transitions */
+            display: inline-block; /* Allows padding */
+            font-size: 0.9em;
+        }
+        .action-link a:hover {
+            /* Invert colors on hover */
+            background-color: var(--secondary-accent);
+            color: var(--card-bg-color); /* Adapt text color */
+        }
+         /* Dark theme specific hover text color */
+        .dark-theme .action-link a:hover {
+              color: #000000; /* Black text */
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="top-buttons" id="top-buttons-wrapper">
+        <button id="download-dashboard" class="download-button">Download PNG</button>
+         <button id="theme-toggle" class="theme-toggle-button">Toggle Theme</button>
+    </div>
+
+    <div class="dashboard-container" id="downloadable-content">
+        <h1 id="dashboard-title">Customer Success Dashboard</h1> <div class="metrics-grid">
+
+            <div class="metric-card">
+                <h2>Customer Satisfaction (CSAT)</h2> <div class="current-value-section">
+                    <span class="current-value">88%</span>
+                    <span class="traffic-light green"></span> <span class="trend-indicator up">&#9650;</span> </div>
+                <div class="chart-container">
+                    <canvas id="csatChart"></canvas> </div>
+                <div class="action-link">
+                    <a href="#" target="_blank">Review Recent Feedback</a> </div>
+            </div>
+
+            <div class="metric-card">
+                <h2>Net Promoter Score (NPS)</h2> <div class="current-value-section">
+                    <span class="current-value">45</span> <span class="traffic-light yellow"></span> <span class="trend-indicator stable">&#9654;</span> </div>
+                <div class="chart-container">
+                    <canvas id="npsChart"></canvas>
+                </div>
+                <div class="action-link">
+                    <a href="#" target="_blank">Analyze Promoter/Detractor Trends</a> </div>
+            </div>
+
+            <div class="metric-card">
+                <h2>Monthly Churn Rate</h2> <div class="current-value-section">
+                    <span class="current-value">1.8%</span>
+                    <span class="traffic-light red"></span> <span class="trend-indicator up">&#9650;</span> </div>
+                <div class="chart-container">
+                    <canvas id="churnChart"></canvas>
+                </div>
+                <div class="action-link">
+                    <a href="#" target="_blank">Investigate Churned Accounts</a> </div>
+            </div>
+
+            <div class="metric-card">
+                <h2>Avg. Customer Lifetime Value (CLV)</h2> <div class="current-value-section">
+                    <span class="current-value">$5,250</span> <span class="traffic-light green"></span> <span class="trend-indicator up">&#9650;</span> </div>
+                <div class="chart-container">
+                    <canvas id="clvChart"></canvas>
+                </div>
+                <div class="action-link">
+                    <a href="#" target="_blank">Explore Upsell Opportunities</a> </div>
+            </div>
+
+            <div class="metric-card">
+                <h2>Avg. Time to Value (TTV)</h2> <div class="current-value-section">
+                    <span class="current-value">28 days</span>
+                     <span class="traffic-light yellow"></span> <span class="trend-indicator down">&#9660;</span> </div>
+                <div class="chart-container">
+                    <canvas id="ttvChart"></canvas>
+                </div>
+                <div class="action-link">
+                    <a href="#" target="_blank">Optimize Onboarding Process</a> </div>
+            </div>
+            </div> </div> <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <script>
+        // --- Element References ---
+        // Grab all the interactive and target elements.
+        const themeToggleButton = document.getElementById('theme-toggle');
+        const downloadDashboardButton = document.getElementById('download-dashboard');
+        const topButtonsWrapper = document.getElementById('top-buttons-wrapper'); // Button container
+        const dashboardContainer = document.getElementById('downloadable-content'); // The main content area
+        const dashboardTitleElement = document.getElementById('dashboard-title'); // For filename
+        const bodyElement = document.body; // For theme class
+
+        // --- State ---
+        let currentTheme = 'light'; // Track current theme
+        let chartInstances = {}; // Store chart objects
+
+        // --- Color Definitions ---
+        // Central object for theme-specific chart colors. DRY principle.
+        const chartColors = {
+            light: { axisText: '#495057', gridLine: 'rgba(0, 0, 0, 0.1)', axisLine: '#ced4da', lineColor: '#0d6efd', pointBg: '#0d6efd', pointBorder: '#ffffff', tooltipBg: 'rgba(0, 0, 0, 0.8)', tooltipText: '#ffffff' },
+            dark: { axisText: '#e0e0e0', gridLine: 'rgba(255, 255, 255, 0.2)', axisLine: '#aaaaaa', lineColor: '#bb86fc', pointBg: '#ffffff', pointBorder: '#bb86fc', tooltipBg: 'rgba(0, 0, 0, 0.8)', tooltipText: '#ffffff' }
+        };
+
+        // --- THEME TOGGLE LOGIC ---
+        // Applies the selected theme and triggers chart re-render.
+        function applyTheme(theme) {
+            console.log(`Switching theme to: ${theme}`);
+            currentTheme = theme; // Update state
+            // Toggle body class, update button text, save preference.
+            if (theme === 'dark') {
+                bodyElement.classList.add('dark-theme');
+                if(themeToggleButton) themeToggleButton.textContent = 'Switch to Light Mode';
+            } else {
+                bodyElement.classList.remove('dark-theme');
+                if(themeToggleButton) themeToggleButton.textContent = 'Switch to Dark Mode';
+            }
+            localStorage.setItem('dashboardTheme', theme);
+            // Crucial: Destroy existing charts before re-rendering with new colors.
+            console.log("Destroying charts for theme update...");
+            Object.values(chartInstances).forEach(chart => { if(chart) chart.destroy(); });
+            chartInstances = {}; // Reset chart storage
+            renderCharts(); // Call the render function
+            console.log("Charts re-rendered for new theme.");
+        }
+
+        // --- CHART RENDERING LOGIC ---
+        // Function to get shared chart options based on the current theme.
+        function getChartOptions() {
+            const colors = chartColors[currentTheme];
+            // Return a base options object for Chart.js.
+            return { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: true, backgroundColor: colors.tooltipBg, titleColor: colors.tooltipText, bodyColor: colors.tooltipText } }, scales: { x: { ticks: { color: colors.axisText, maxRotation: 0, autoSkipPadding: 12 }, grid: { color: colors.gridLine, borderColor: colors.axisLine, tickColor: colors.axisLine } }, y: { ticks: { color: colors.axisText, precision: 0 }, grid: { color: colors.gridLine, borderColor: colors.axisLine, tickColor: colors.axisLine }, beginAtZero: false /* Default */ } } };
+        }
+
+        // Function to get shared dataset configuration for line charts.
+        function getLineChartDatasetConfig(data, label) {
+             const colors = chartColors[currentTheme];
+             // Return dataset configuration object.
+             return { label: label, data: data, borderColor: colors.lineColor, borderWidth: 2, tension: 0.1, pointBackgroundColor: colors.pointBg, pointBorderColor: colors.pointBorder, pointBorderWidth: (currentTheme === 'light' ? 1.5 : 1), pointRadius: 2.5, pointHoverRadius: 4, pointHoverBackgroundColor: colors.pointBg, pointHoverBorderColor: colors.pointBorder };
+        }
+
+        // Main function to render all charts on the dashboard.
+        function renderCharts() {
+            const options = getChartOptions(); // Get base options
+            // Generate month labels dynamically for X-axis.
+            const now = new Date();
+            const monthLabels = Array.from({ length: 12 }, (_, i) => { const d = new Date(now); d.setMonth(now.getMonth() - (11 - i)); const year = d.getFullYear().toString().slice(-2); const month = d.toLocaleString('default', { month: 'short' }); return (d.getMonth() === 0 || i === 0) ? `${month} '${year}` : month; });
+
+            // --- Sample Data (Replace with actual data source!) ---
+            const csatData = [82, 83, 85, 84, 86, 85, 87, 88, 86, 87, 89, 88];
+            const npsData = [35, 38, 40, 42, 41, 43, 45, 44, 46, 42, 45, 45];
+            const churnData = [2.5, 2.4, 2.2, 2.3, 2.1, 2.0, 1.9, 1.8, 2.0, 1.7, 1.6, 1.8]; // Lower is better, but axis not reversed here
+            const clvData = [4500, 4600, 4750, 4800, 4850, 4900, 5000, 5100, 5050, 5150, 5200, 5250];
+            const ttvData = [35, 34, 33, 32, 31, 30, 30, 29, 31, 29, 28, 28]; // Lower is better
+
+            // --- Create/Update Charts ---
+            // Find canvas element, create chart, store instance. Apply specific options.
+
+            // CSAT Chart
+            if (document.getElementById('csatChart')) {
+                 chartInstances.csat = new Chart(document.getElementById('csatChart'), {
+                      type: 'line',
+                      data: { labels: monthLabels, datasets: [getLineChartDatasetConfig(csatData, 'CSAT')] },
+                      // Format Y-axis ticks as percentages
+                      options: { ...options, scales: { ...options.scales, y: { ...options.scales.y, ticks: { ...options.scales.y.ticks, callback: value => value + '%' } } } }
+                 });
+            }
+            // NPS Chart
+            if (document.getElementById('npsChart')) {
+                 chartInstances.nps = new Chart(document.getElementById('npsChart'), {
+                      type: 'line',
+                      data: { labels: monthLabels, datasets: [getLineChartDatasetConfig(npsData, 'NPS')] },
+                      // Use default options, no specific formatting needed for raw NPS score
+                      options: options
+                 });
+            }
+            // Churn Chart
+            if (document.getElementById('churnChart')) {
+                 chartInstances.churn = new Chart(document.getElementById('churnChart'), {
+                      type: 'line',
+                      data: { labels: monthLabels, datasets: [getLineChartDatasetConfig(churnData, 'Churn')] },
+                      // Format Y-axis ticks as percentage with one decimal place
+                      options: { ...options, scales: { ...options.scales, y: { ...options.scales.y, ticks: { ...options.scales.y.ticks, callback: value => value.toFixed(1) + '%' } } } }
+                 });
+            }
+            // CLV Chart
+            if (document.getElementById('clvChart')) {
+                 chartInstances.clv = new Chart(document.getElementById('clvChart'), {
+                      type: 'line',
+                      data: { labels: monthLabels, datasets: [getLineChartDatasetConfig(clvData, 'CLV')] },
+                      // Format Y-axis ticks as currency in thousands (e.g., $5.2k)
+                      options: { ...options, scales: { ...options.scales, y: { ...options.scales.y, ticks: { ...options.scales.y.ticks, callback: value => '$' + (value/1000).toFixed(1) + 'k' } } } }
+                 });
+            }
+            // TTV Chart
+            if (document.getElementById('ttvChart')) {
+                 chartInstances.ttv = new Chart(document.getElementById('ttvChart'), {
+                      type: 'line',
+                      data: { labels: monthLabels, datasets: [getLineChartDatasetConfig(ttvData, 'TTV')] },
+                      // IMPORTANT: Reverse Y-axis (lower days = better), format ticks with 'd'
+                      options: { ...options, scales: { ...options.scales, y: { ...options.scales.y, reverse: true, ticks: { ...options.scales.y.ticks, callback: value => value + 'd' } } } }
+                 });
+            }
+            console.log("Charts rendered/updated.");
+        }
+
+        // --- DOWNLOAD FUNCTIONALITY ---
+        // Captures the main dashboard area as a PNG.
+        function downloadDashboardAsPNG() {
+            // Check required elements exist (container, button wrapper, title).
+            if (!dashboardContainer || !topButtonsWrapper || !dashboardTitleElement) {
+                console.error("Download failed: Required elements not found!");
+                alert("Error: Could not find content to download.");
+                return;
+            }
+            console.log("Initiating dashboard download...");
+
+            // --- HIDE BUTTONS ---
+            // Temporarily hide the top buttons.
+            const originalButtonsDisplay = topButtonsWrapper.style.display;
+            topButtonsWrapper.style.display = 'none';
+
+            // --- Transparency Handling ---
+            // Standard procedure for clean capture.
+            const originalBodyBackground = bodyElement.style.backgroundColor;
+            bodyElement.style.backgroundColor = 'transparent';
+
+            // Force reflow before capture.
+            window.getComputedStyle(dashboardContainer).getPropertyValue('width');
+
+            // --- Capture the dashboard container ---
+            html2canvas(dashboardContainer, {
+                backgroundColor: null, // Use element's background
+                useCORS: true,
+                logging: false,
+                scale: window.devicePixelRatio || 1 // High-res capture
+             })
+            .then(canvas => {
+                // --- Restore Styles (Success) ---
+                console.log("Dashboard captured.");
+                bodyElement.style.backgroundColor = originalBodyBackground; // Restore body bg
+                topButtonsWrapper.style.display = originalButtonsDisplay || ''; // Restore buttons
+
+                // --- Generate Filename ---
+                // Use the dashboard title text for the filename.
+                const titleText = dashboardTitleElement.textContent.trim();
+                let filename = titleText ? titleText : 'dashboard'; // Use title or default
+                // Sanitize filename.
+                filename = filename.replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, '_').substring(0, 50);
+                filename += '.png';
+                console.log(`Generated filename: ${filename}`);
+
+                // --- Trigger Download ---
+                // Standard link-click routine.
+                const link = document.createElement('a');
+                link.download = filename;
+                link.href = canvas.toDataURL('image/png');
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                console.log("Download triggered.");
+            })
+            .catch(error => {
+                 // --- Restore Styles (Error) ---
+                 // ALWAYS restore styles on error!
+                 bodyElement.style.backgroundColor = originalBodyBackground;
+                 topButtonsWrapper.style.display = originalButtonsDisplay || '';
+
+                console.error('Error capturing dashboard:', error);
+                alert('Sorry, could not download the dashboard image.');
+            });
+        }
+
+
+        // --- EVENT LISTENERS ---
+        // Wire up the theme toggle button.
+        if (themeToggleButton) {
+              themeToggleButton.addEventListener('click', () => { applyTheme(currentTheme === 'light' ? 'dark' : 'light'); });
+        }
+        // Wire up the download button.
+        if (downloadDashboardButton) {
+              downloadDashboardButton.addEventListener('click', downloadDashboardAsPNG);
+        }
+
+        // --- INITIALIZATION ON LOAD ---
+        // Set initial theme and render charts when the DOM is ready.
+        document.addEventListener('DOMContentLoaded', () => {
+            // Determine and apply initial theme (check storage, then system preference).
+            const savedTheme = localStorage.getItem('dashboardTheme');
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            let initialTheme = 'light';
+            if (savedTheme) { initialTheme = savedTheme; }
+            else if (prefersDark) { initialTheme = 'dark'; }
+
+            // Apply theme *before* rendering charts, without transition flash.
+            currentTheme = initialTheme; // Set global state
+            if (initialTheme === 'dark') {
+                bodyElement.classList.add('dark-theme');
+                 if(themeToggleButton) themeToggleButton.textContent = 'Switch to Light Mode';
+            } else {
+                bodyElement.classList.remove('dark-theme'); // Ensure light if default/saved light
+                 if(themeToggleButton) themeToggleButton.textContent = 'Switch to Dark Mode';
+            }
+
+            // Render the charts for the first time.
+            renderCharts();
+        });
+
+    </script>
+
+</body>
+</html>

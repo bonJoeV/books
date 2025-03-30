@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Obsession Flywheel</title>
+    <style>
+        * {
+            /* Get the basics right first. Border-box saves headaches later. */
+            box-sizing: border-box;
+        }
+        body {
+            font-family: sans-serif; /* Keep it readable, folks. */
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            /* Keep the background clean, focus is on the content inside. #f9f9f9 feels less harsh than pure white. */
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto; /* Give it some breathing room top/bottom */
+            /* This holds the good stuff. White background makes it pop. */
+            background-color: #fff;
+            padding: 30px;
+            /* Added more top padding so the download button doesn't feel crammed. Learned that the hard way. */
+            padding-top: 60px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            /* Need this for the download button positioning. */
+            position: relative;
+        }
+
+        /* --- Download Button Styling --- */
+        .download-button-wrapper {
+              /* Gotta stick this download button somewhere handy. Absolute positioning, top right. */
+              position: absolute;
+              top: 15px;
+              right: 15px;
+              z-index: 10; /* Make sure it sits on top */
+              /* JS will handle showing/hiding this before download */
+        }
+        .download-button {
+            /* Simple button style. Nothing fancy, just needs to be clickable. Tried a bolder look first, felt distracting. */
+            padding: 8px 12px;
+            background-color: #eee;
+            color: #333;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        .download-button:hover {
+            background-color: #ddd;
+            border-color: #bbb;
+        }
+        /* --- End Download Button --- */
+
+        h1 {
+            /* Big title, center stage. Needs to grab attention. */
+            text-align: center;
+            color: #2c3e50;
+            margin-top: 0; /* Resetting just in case */
+            margin-bottom: 30px;
+        }
+        h2 {
+            /* Kept H2 style rules just in case we need 'em later. Consistency helps, even if unused for now. */
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            text-align: center;
+        }
+
+        /* --- Flexbox Layout for Side-by-Side Sections --- */
+        .flywheel-layout {
+            /* Flexbox for the win! Side-by-side layout for text and diagram. */
+            display: flex;
+            /* Let it wrap on small screens - no squished content allowed. */
+            flex-wrap: wrap;
+            gap: 20px; /* A little space between the columns */
+        }
+        .flywheel-text,
+        .flywheel-diagram {
+            /* Make 'em share the space like good teammates. */
+            flex: 1;
+            /* Keeps things readable before they stack. */
+            min-width: 320px;
+        }
+        /* --- End Flexbox Layout --- */
+
+        /* Styling for the text description list */
+        .flywheel-steps {
+            list-style: none; /* Ditch the default bullets */
+            padding-left: 0;
+            margin-top: 0;
+        }
+        .flywheel-steps li {
+            margin-bottom: 15px;
+            padding-left: 25px; /* Make room for our custom marker */
+            position: relative;
+        }
+        .flywheel-steps li::before {
+            /* Using arrows instead of boring bullets. Little details matter, keeps it moving. */
+            content: '➡️';
+            position: absolute;
+            left: 0;
+            top: 0;
+            color: #0d6efd; /* Match the strong tag color */
+        }
+        .flywheel-steps li strong {
+              /* Make the step title pop */
+              color: #0d6efd;
+              /* Give it its own line. Clear structure is key. */
+              display: block;
+              margin-bottom: 3px;
+        }
+
+        /* Styling for the Mermaid diagram container */
+        .flywheel-diagram {
+              /* Center the diagram vertically and horizontally using flex. Looks way better than just shoving it in there. */
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              padding: 10px; /* A bit of breathing room around the diagram itself */
+        }
+        .mermaid-container {
+            /* Let the Mermaid container fill its parent space. Flex handles the centering now. */
+            /* Cleaned up old positioning styles that were fighting flex. */
+              width: 100%;
+              text-align: center; /* Helps initially, SVG overrides might happen */
+        }
+
+        .mermaid-container pre {
+              /* Mermaid wraps the diagram code in a <pre>, reset its margin. */
+              margin: 0;
+        }
+        /* Make Mermaid SVG scale nicely */
+        .mermaid-container svg {
+              /* Make the diagram responsive. Needs to scale down gracefully, not break the layout. */
+              max-width: 100%;
+              height: auto;
+        }
+        /* Font consistency for Mermaid diagram text */
+        .mermaid text {
+             /* Force a readable font in the diagram. Sometimes Mermaid picks weird defaults. */
+             /* !important needed to override its stubbornness. */
+             font-family: sans-serif !important;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container" id="downloadable-content">
+        <div class="download-button-wrapper" id="download-wrapper">
+            <button id="download-flywheel" class="download-button">Download PNG</button>
+        </div>
+
+        <h1>The Customer Obsession Flywheel</h1>
+
+        <div class="flywheel-layout">
+
+            <div class="flywheel-text">
+                <ol class="flywheel-steps">
+                    <li>
+                        <strong>1. Customer Obsession:</strong>
+                        Start by deeply understanding customer needs, challenges, and goals. Actively listen and gather feedback. </li>
+                    <li>
+                        <strong>2. Better Customer Outcomes:</strong>
+                        Design products, services, and experiences that effectively help customers achieve their desired results and success. </li>
+                    <li>
+                        <strong>3. Improved Satisfaction:</strong>
+                        Customers who achieve their outcomes easily and successfully become happier and more satisfied with your offerings. </li>
+                    <li>
+                        <strong>4. Greater Loyalty:</strong>
+                        Satisfied customers are much more likely to remain customers, leading to higher retention and renewal rates. </li>
+                    <li>
+                        <strong>5. Increased Advocacy:</strong>
+                        Loyal, happy customers become advocates, recommending you to others through referrals, positive reviews, and case studies. </li>
+                    <li>
+                        <strong>6. Boosted Revenue:</strong>
+                        Increased retention, expansion from loyal customers, and new business from advocacy all contribute to revenue growth. </li>
+                    <li>
+                        <strong>7. Reinvest & Accelerate:</strong>
+                        Use the boosted revenue and insights gained to further invest in understanding and serving customers better, restarting and accelerating the cycle (returns to Step 1). </li>
+                </ol>
+            </div>
+
+            <div class="flywheel-diagram">
+                <div class="mermaid-container">
+                    <pre class="mermaid">
+graph TD
+    A["Customer Obsession (Understand & Solve)"] --> B("Better Customer Outcomes (Success Achieved)");
+    B --> C("Improved Satisfaction (Happiness)");
+    C --> D("Greater Loyalty (Retention/Renewal)");
+    D --> E("Increased Advocacy (Referrals/Word-of-Mouth)");
+    E --> F("Boosted Revenue (Growth)");
+    F -- "Reinvest & Accelerate" --> A;
+
+    %% Optional Styling - Make the start and end points stand out a bit.
+    style A fill:#ddeeff,stroke:#0d6efd,stroke-width:2px,color:#000
+    style F fill:#d4edda,stroke:#198754,stroke-width:2px,color:#000
+                    </pre>
+                </div>
+            </div>
+
+        </div> </div> <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <script>
+        // Kick off Mermaid. Gotta render that diagram!
+        mermaid.initialize({ startOnLoad: true });
+
+        // --- Download Functionality ---
+        // Grab the elements we need
+        const downloadButton = document.getElementById('download-flywheel');
+        const contentToDownload = document.getElementById('downloadable-content');
+        const downloadButtonWrapper = document.getElementById('download-wrapper'); // Button's container
+        const bodyElement = document.body; // Need this to mess with the background
+
+        // The magic behind the download button. Uses html2canvas to grab the content block.
+        function downloadFlywheelAsPNG() {
+            // Basic check - bail if things aren't found.
+            if (!contentToDownload || !downloadButtonWrapper) {
+                console.error("Required elements for download not found! Can't screenshot.");
+                return;
+            }
+
+            // --- HIDE BUTTON ---
+            // Temporarily hide the button itself so it's not in the screenshot. Sneaky, but effective.
+            const originalWrapperDisplay = downloadButtonWrapper.style.display;
+            downloadButtonWrapper.style.display = 'none';
+
+            // --- HANDLE BACKGROUND ---
+            // Want a transparent PNG? Gotta zap the body background during capture.
+            // Store the original first!
+            const originalBodyBackground = bodyElement.style.backgroundColor;
+            bodyElement.style.backgroundColor = 'transparent';
+
+             // --- FORCE RENDER ---
+             // Force the browser to actually draw things before we screenshot, especially SVG.
+             // Avoids blank or weird captures. Yeah, learned *this* lesson.
+             window.getComputedStyle(contentToDownload).getPropertyValue('width');
+
+
+            // Use html2canvas to capture the specific container
+            html2canvas(contentToDownload, {
+                backgroundColor: null, // Key for transparency! Let the container's CSS handle its own bg.
+                useCORS: true, // If there were external images, this would be needed.
+                logging: false, // Keep the console clean.
+                scale: window.devicePixelRatio || 1 // Capture at screen resolution for sharpness.
+             })
+            .then(canvas => {
+                // --- RESTORE BACKGROUND (Success) ---
+                // Okay, screenshot's done, put the body background back!
+                bodyElement.style.backgroundColor = originalBodyBackground;
+                // --- SHOW BUTTON (Success) ---
+                // Bring the button back! Restore its original display state.
+                downloadButtonWrapper.style.display = originalWrapperDisplay || '';
+
+                // --- TRIGGER DOWNLOAD ---
+                // Standard trick: make a link, set the image data, click it virtually, then clean it up.
+                const link = document.createElement('a');
+                link.download = 'customer_obsession_flywheel.png'; // Filename for the download
+                link.href = canvas.toDataURL('image/png'); // Convert canvas to PNG data
+                document.body.appendChild(link); // Needs to be in the DOM to be clickable
+                link.click(); // Click it!
+                document.body.removeChild(link); // Clean up after ourselves.
+            })
+            .catch(error => {
+                 // --- RESTORE BACKGROUND (Error) ---
+                 // Important: Restore background even if there's an error!
+                 bodyElement.style.backgroundColor = originalBodyBackground;
+                 // --- SHOW BUTTON (Error) ---
+                 // Bring the button back even on failure.
+                 downloadButtonWrapper.style.display = originalWrapperDisplay || '';
+
+                console.error('Damn, error capturing flywheel:', error);
+                alert('Sorry, could not download the flywheel image. Something went wrong.');
+            });
+        }
+
+        // Attach event listener to the download button
+        // Wire up the button. No click, no download. Simple as that.
+        if (downloadButton) {
+            downloadButton.addEventListener('click', downloadFlywheelAsPNG);
+        } else {
+             // Should always find it, but belt-and-suspenders...
+             console.error("Download button wasn't found in the DOM!");
+        }
+
+    </script>
+
+</body>
+</html>

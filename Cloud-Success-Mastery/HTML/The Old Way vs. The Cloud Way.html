@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Callout Box: The Old Way vs. The Cloud Way</title>
+<style>
+    body { /* Basic body style - needed for background handling */
+        margin: 0;
+        padding: 20px;
+        background-color: #ffffff; /* Default background */
+        font-family: sans-serif; /* Keep font simple */
+    }
+
+    /* Wrapper for the action button above the box */
+    .action-wrapper {
+        text-align: center; /* Center the button */
+        margin-bottom: 15px; /* Space below the button */
+        /* Optional: Constrain width like callout box if desired */
+        /* max-width: 800px; */
+        /* margin-left: auto; */
+        /* margin-right: auto; */
+    }
+
+    /* Download Button Styling */
+    .download-button {
+        /* Standard small button style */
+        padding: 5px 10px;
+        background-color: #eee;
+        color: #333;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.8em;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        transition: background-color 0.3s ease, border-color 0.3s ease; /* Smooth hover */
+    }
+    .download-button:hover {
+        background-color: #ddd;
+        border-color: #bbb;
+    }
+
+    /* Callout Box Styling - Container for the comparison table */
+    .callout-box {
+        border: 2px solid #f0f0f0; /* Light border */
+        background-color: #f9f9f9; /* Light background */
+        padding: 10px 10px 10px 10px; /* Consistent padding */
+        margin: 0 auto; /* Center horizontally */
+        border-radius: 8px; /* Soft corners */
+        font-family: sans-serif; /* Match body */
+        max-width: 800px; /* Keep width reasonable */
+    }
+    .callout-box h3 {
+        /* Title inside the box */
+        margin-top: 0; /* Remove default margin */
+        color: #333;
+        text-align: center; /* Center the title */
+        margin-bottom: 15px; /* Space below title, above table */
+    }
+    /* Add the pin automatically to the title using CSS */
+    .callout-box h3#callout-title::before {
+        content: "📌 "; /* The pin emoji and a space - visual anchor */
+    }
+    .comparison-table { /* Specific class name for this table */
+        /* Table styling - make the contrast stark and clear */
+        width: 100%;
+        border-collapse: collapse; /* Clean lines */
+        margin-bottom: 0; /* Remove margin if it's the last element in the box */
+    }
+    .comparison-table th,
+    .comparison-table td {
+        /* Cell styling - padding for space, border for structure */
+        border: 1px solid #ddd;
+        padding: 10px;
+        text-align: left;
+        vertical-align: top; /* Align top, looks better if text wraps */
+    }
+    .comparison-table th {
+        /* Header styling - make columns distinct */
+        background-color: #e9e9e9;
+        font-weight: bold;
+    }
+    /* Optional: Zebra striping for readability */
+    .comparison-table tr:nth-child(even) {
+        background-color: #fdfdfd; /* Subtle striping */
+    }
+</style>
+</head>
+<body>
+
+<div class="action-wrapper">
+    <button id="download-table-button" class="download-button">Download Comparison PNG</button>
+</div>
+
+<div class="callout-box" id="downloadable-content">
+    <h3 id="callout-title">The Old Way vs. The Cloud Way</h3>
+    <table class="comparison-table">
+        <thead>
+            <tr>
+                <th>Traditional Support Model</th> <th>Proactive Success Model</th> </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Reactive, transactional</td> <td>Proactive, relational</td> </tr>
+            <tr>
+                <td>Focused on ticket volume</td> <td>Focused on customer outcomes</td> </tr>
+            <tr>
+                <td>Solving problems after they occur</td> <td>Preventing problems before they arise</td> </tr>
+            <tr>
+                <td>Short-term, issue-based relationships</td> <td>Long-term, strategic partnerships</td> </tr>
+            </tbody>
+    </table>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+    // --- Element References ---
+    // Grab the button, the content box, the title, and the body. Standard setup.
+    const downloadButton = document.getElementById('download-table-button');
+    const contentToDownload = document.getElementById('downloadable-content'); // The callout box
+    const calloutTitleElement = document.getElementById('callout-title'); // For the filename
+    const bodyElement = document.body; // For background handling
+
+    // --- DOWNLOAD FUNCTIONALITY ---
+    // Function to capture the content box as a PNG image.
+    function downloadContentAsPNG() {
+        // Sanity check: Ensure the content box and title element exist.
+        if (!contentToDownload || !calloutTitleElement) {
+            console.error("Cannot download: Required elements (content box or title) not found!");
+            alert("Error: Could not find content to download.");
+            return; // Stop if elements are missing
+        }
+        console.log("Initiating PNG download for comparison table...");
+
+        // Button is outside the capture area, no hiding/showing needed.
+
+        // --- Prepare for Capture ---
+        // Standard background transparency trick. Store original, set transparent, capture, restore.
+        const originalBodyBackground = bodyElement.style.backgroundColor;
+        bodyElement.style.backgroundColor = 'transparent';
+
+        // Force style calculation - insurance against rendering glitches.
+        window.getComputedStyle(contentToDownload).getPropertyValue('width');
+
+        // --- Capture the Callout Box ---
+        html2canvas(contentToDownload, {
+            backgroundColor: null, // Use element's background, allow transparency
+            useCORS: true,         // Standard practice
+            logging: false,        // Keep console clean
+            scale: window.devicePixelRatio || 1 // Capture at screen resolution
+         })
+        .then(canvas => {
+            // --- Restore Background (Success Case) ---
+            console.log("Comparison content captured.");
+            bodyElement.style.backgroundColor = originalBodyBackground; // Put the background back!
+
+            // --- Generate Filename ---
+            // Create a clean filename from the title.
+            // 1. Get title text, remove pin (if it wasn't added by CSS), trim whitespace.
+            const titleText = calloutTitleElement.textContent.replace("📌 ", "").trim();
+            // 2. Use title or a specific default fallback name for this table.
+            let filename = titleText ? titleText : 'comparison_table';
+            // 3. Sanitize: remove bad chars, replace spaces, limit length. Adjusted limit slightly.
+            filename = filename.replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, '_').substring(0, 60);
+            filename += '.png'; // Add extension
+            console.log(`Generated filename: ${filename}`);
+
+            // --- Trigger Download ---
+            // Standard link-click method.
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            console.log("Download triggered.");
+        })
+        .catch(error => {
+             // --- Restore Background (Error Case) ---
+             // ALWAYS restore the background, even if capture fails!
+             bodyElement.style.backgroundColor = originalBodyBackground;
+
+            console.error('Error capturing comparison content:', error);
+            alert('Sorry, could not download the comparison image. An error occurred.');
+        });
+    }
+
+    // --- EVENT LISTENER ---
+    // Attach the download function to the button click. Check button exists.
+    if (downloadButton) {
+        downloadButton.addEventListener('click', downloadContentAsPNG);
+    } else {
+        console.error("Download button element not found!");
+    }
+
+    // Note: The JS check for adding the pin emoji below is likely redundant
+    // because the CSS rule `h3#callout-title::before` handles adding it visually.
+    // Leaving the JS check commented out or removed is cleaner if CSS is doing the job.
+    /*
+    if (calloutTitleElement && !calloutTitleElement.innerHTML.includes('📌')) {
+       // CSS handles adding the pin visually via ::before pseudo-element
+    }
+    */
+
+</script>
+
+</body>
+</html>

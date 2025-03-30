@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Weekly Proactive Engagement Calendar</title>
+<style>
+    body { /* Basic body style - Needed for background reset during capture */
+        margin: 0;
+        padding: 20px;
+        background-color: #ffffff; /* Default background */
+        font-family: sans-serif; /* Keep it simple */
+    }
+
+    /* Wrapper for the action button */
+    .action-wrapper {
+        text-align: center; /* Center the button */
+        margin-bottom: 15px; /* Space below the button */
+        max-width: 800px; /* Match callout box width */
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* Download Button Styling */
+    .download-button {
+        /* Standard small button style */
+        padding: 5px 10px;
+        background-color: #eee;
+        color: #333;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.8em;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        transition: background-color 0.3s ease, border-color 0.3s ease; /* Smooth hover */
+    }
+    .download-button:hover {
+        background-color: #ddd;
+        border-color: #bbb;
+    }
+
+    /* --- Callout Box Style (Standard) --- */
+    .callout-box {
+        border: 2px solid #f0f0f0; /* Light border */
+        background-color: #f9f9f9; /* Light background */
+        padding: 10px 10px 10px 10px; /* Consistent padding */
+        margin: 0 auto; /* Center horizontally */
+        border-radius: 8px; /* Soft corners */
+        font-family: sans-serif; /* Match body */
+        max-width: 800px; /* Keep width constrained */
+        text-align: center; /* Centers the title and the grid container */
+    }
+    /* --- END USER STYLE --- */
+
+    .callout-box h3 {
+        /* Title styling */
+        margin-top: 10px;
+        color: #333;
+        margin-bottom: 15px; /* Space before intro text */
+        display: inline-block; /* Allows centering via parent */
+    }
+    .callout-box h3#callout-title::before {
+        /* Add the pin for visual consistency */
+        content: "📌 ";
+    }
+    /* Styling for intro/outro paragraphs */
+    .callout-box .intro-outro {
+        color: #333;
+        line-height: 1.6; /* Readability */
+        margin-top: 0;
+        margin-bottom: 1em; /* Space below paragraphs */
+        text-align: left; /* Align paragraph text left */
+        padding: 0 5px; /* Slight horizontal padding */
+        font-size: 0.95em; /* Slightly smaller text */
+    }
+
+    /* --- Calendar container using Grid for 2x2 layout --- */
+    .calendar-container {
+        /* Using CSS Grid here - perfect for a simple 2x2 layout. */
+        display: grid;
+        /* Create 2 columns of equal width (1 fraction unit each) */
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px; /* Space between the day blocks */
+        margin-bottom: 1em; /* Space below the grid, before outro text */
+        padding: 0 5px; /* Slight horizontal padding for the grid */
+    }
+    /* --- End Grid specific styles --- */
+
+    /* Styling for each day's block in the grid */
+    .calendar-day {
+        background-color: #ffffff; /* White background for each day */
+        border: 1px solid #dddddd; /* Clear border */
+        border-radius: 6px; /* Slightly rounded corners */
+        padding: 10px;
+        box-shadow: 2px 2px 5px rgba(0,0,0,0.05); /* Subtle shadow */
+        display: flex; /* Use flex inside for vertical layout */
+        flex-direction: column;
+        text-align: left; /* Align text left within the block */
+        /* Grid handles the sizing now, no need for flex-basis */
+    }
+
+    /* Styling for the day name (e.g., "Monday") */
+    .day-name {
+        font-weight: bold;
+        color: #0056b3; /* Make the day stand out */
+        margin-bottom: 8px; /* Space below day name */
+        padding-bottom: 6px; /* Space above the border */
+        border-bottom: 1px solid #e9ecef; /* Separator line */
+        font-size: 1em;
+    }
+
+    /* Styling for the activity description */
+    .day-activity {
+        font-size: 0.9em; /* Slightly smaller text for activity */
+        line-height: 1.4; /* Tighten line spacing a bit */
+        color: #495057; /* Softer text color */
+        flex-grow: 1; /* Allows text block to fill available vertical space */
+    }
+
+     /* Ensure last intro/outro paragraph has no bottom margin if it's the very last child */
+    .callout-box > .intro-outro:last-child {
+        margin-bottom: 0;
+    }
+</style>
+</head>
+<body>
+
+<div class="action-wrapper">
+    <button id="download-calendar-button" class="download-button">Download Calendar PNG</button>
+</div>
+
+<div class="callout-box" id="downloadable-content">
+    <h3 id="callout-title">Weekly Proactive Engagement Calendar</h3>
+    <p class="intro-outro">
+        Great strategies are useless without consistent execution. Establish a weekly rhythm that your entire team follows, reinforcing proactive habits: </p>
+
+    <div class="calendar-container">
+        <div class="calendar-day">
+            <div class="day-name">Monday</div>
+            <div class="day-activity">Customer health reviews and outreach planning.</div> </div>
+        <div class="calendar-day">
+            <div class="day-name">Tuesday–Wednesday</div>
+            <div class="day-activity">Customer outreach calls and check-ins.</div> </div>
+        <div class="calendar-day">
+            <div class="day-name">Thursday</div>
+            <div class="day-activity">Team success huddles to discuss patterns and escalate emerging issues.</div> </div>
+        <div class="calendar-day">
+            <div class="day-name">Friday</div>
+            <div class="day-activity">Proactive communication—share insights or feature tips with customers via newsletters or personal notes.</div> </div>
+    </div>
+
+    <p class="intro-outro">
+        This simple rhythm ensures your proactive playbook remains actionable and sustainable. </p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+    // --- Element References ---
+    // Grab the necessary elements: button, content box, title, body.
+    const downloadButton = document.getElementById('download-calendar-button');
+    const contentToDownload = document.getElementById('downloadable-content'); // The callout box
+    const calloutTitleElement = document.getElementById('callout-title'); // For the filename
+    const bodyElement = document.body; // For background handling
+
+    // --- DOWNLOAD FUNCTIONALITY ---
+    // Function to capture the content box as a PNG image.
+    function downloadContentAsPNG() {
+        // Double-check required elements are present. No content, no download.
+        if (!contentToDownload || !calloutTitleElement) {
+            console.error("Download failed: Required elements (content box or title) not found!");
+            alert("Error: Could not find content to download.");
+            return;
+        }
+        console.log("Initiating PNG download for calendar...");
+
+        // --- Prepare for Capture ---
+        // Standard background transparency trick. Store original, set transparent, capture, restore.
+        const originalBodyBackground = bodyElement.style.backgroundColor;
+        bodyElement.style.backgroundColor = 'transparent';
+
+        // Force style calculation - insurance against rendering glitches.
+        window.getComputedStyle(contentToDownload).getPropertyValue('width');
+
+        // --- Capture the Callout Box ---
+        html2canvas(contentToDownload, {
+            backgroundColor: null, // Use element's background, allow transparency
+            useCORS: true,         // Standard practice
+            logging: false,        // Keep console clean
+            scale: window.devicePixelRatio || 1 // Capture at screen resolution
+         })
+        .then(canvas => {
+            // --- Restore Background (Success) ---
+            console.log("Calendar content captured.");
+            bodyElement.style.backgroundColor = originalBodyBackground; // Put the background back!
+
+            // --- Generate Filename ---
+            // Create a useful filename from the title.
+            // 1. Get title text, remove pin, trim whitespace.
+            const titleText = calloutTitleElement.textContent.replace("📌 ", "").trim();
+            // 2. Use title or a default fallback.
+            let filename = titleText ? titleText : 'engagement_calendar';
+            // 3. Sanitize: remove bad chars, replace spaces, limit length.
+            filename = filename.replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, '_').substring(0, 60);
+            filename += '.png'; // Add extension
+            console.log(`Generated filename: ${filename}`);
+
+            // --- Trigger Download ---
+            // Standard link-click method.
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            console.log("Download triggered.");
+        })
+        .catch(error => {
+             // --- Restore Background (Error) ---
+             // ALWAYS restore the background, even on failure!
+             bodyElement.style.backgroundColor = originalBodyBackground;
+
+            console.error('Error capturing calendar content:', error);
+            alert('Sorry, could not download the calendar image. An error occurred.');
+        });
+    }
+
+    // --- EVENT LISTENER ---
+    // Connect the download button click to the download function. Check button exists.
+    if (downloadButton) {
+        downloadButton.addEventListener('click', downloadContentAsPNG);
+    } else {
+        console.error("Download button element not found!");
+    }
+
+</script>
+
+</body>
+</html>

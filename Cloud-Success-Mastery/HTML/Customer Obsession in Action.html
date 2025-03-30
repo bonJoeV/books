@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Callout Box: Customer Obsession in Action</title>
+<style>
+    body { /* Basic body style */
+        margin: 0;
+        padding: 20px;
+        background-color: #ffffff;
+        font-family: sans-serif;
+    }
+
+    /* Wrapper for the action button */
+    .action-wrapper {
+        text-align: center;
+        margin-bottom: 15px;
+        max-width: 800px; /* Match callout box width */
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* Download Button Styling */
+    .download-button {
+        padding: 5px 10px;
+        background-color: #eee;
+        color: #333;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.8em;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+    .download-button:hover {
+        background-color: #ddd;
+        border-color: #bbb;
+    }
+
+    /* --- USER PREFERRED CALLOUT BOX STYLE --- */
+    .callout-box {
+        border: 2px solid #f0f0f0; /* Light gray border */
+        background-color: #f9f9f9; /* Very light gray background */
+        padding: 10px 10px 10px 10px; /* Applied user padding */
+        margin: 0 auto; /* Center the box horizontally */
+        border-radius: 8px; /* Slightly rounded corners */
+        font-family: sans-serif; /* Use a common sans-serif font */
+        max-width: 800px; /* Applied user max-width */
+        text-align: center; /* Needed to center inline-block title */
+    }
+    /* --- END USER STYLE --- */
+
+    .callout-box h3 {
+        margin-top: 10px;
+        color: #333;
+        margin-bottom: 15px;
+        display: inline-block; /* Keep for centering */
+    }
+    /* Add the pin using ::before */
+    .callout-box h3#callout-title::before {
+        content: "📌 "; /* The pin emoji and a space */
+    }
+    /* Style paragraphs and blockquote */
+    .callout-box p,
+    .callout-box blockquote {
+        color: #333;
+        line-height: 1.6;
+        margin-top: 0;
+        margin-bottom: 1em;
+        text-align: left; /* Align text left for readability */
+        padding-left: 5px; /* Slight indent */
+        padding-right: 5px;
+        font-size: 0.95em;
+    }
+     .callout-box blockquote {
+        background-color: #ffffff;
+        border-left: 4px solid #007bff;
+        margin: 1em 5px; /* Adjusted margin slightly */
+        padding: 20px 15px; /* Adjusted padding */
+        font-style: italic;
+        color: #495057;
+        max-width: 500px; /* Applied user max-width */
+        margin: 0 auto; /* Center the box horizontally */
+        box-shadow: 1px 1px 3px rgba(0,0,0,0.05);
+        text-align: left; /* Ensure blockquote text is left aligned */
+    }
+    .callout-box blockquote p {
+        margin-bottom: 0.5em;
+        font-size: 1.05em; /* Keep quote slightly larger */
+        padding-left: 0; /* Reset padding for p inside blockquote */
+        padding-right: 0;
+    }
+    .callout-box blockquote footer {
+        font-style: normal;
+        font-size: 0.9em;
+        color: #555;
+        text-align: right;
+        padding-right: 0; /* Reset padding */
+    }
+    .callout-box blockquote footer::before {
+        content: "— ";
+    }
+    /* Remove bottom margin from the very last element */
+    .callout-box > :last-child {
+        margin-bottom: 0;
+    }
+</style>
+</head>
+<body>
+
+<div class="action-wrapper">
+    <button id="download-obsession-button" class="download-button">Download Story PNG</button>
+</div>
+
+<div class="callout-box" id="downloadable-content"> <h3 id="callout-title">Customer Obsession in Action</h3> <p>
+        Each weekly team meeting kicks off with a powerful tradition: one team member shares a recent story where they—or a colleague—went above and beyond for a customer. These aren’t just “feel-good” moments. They’re tactical, real-world examples of proactive support, creative problem-solving, and partnership in motion.
+    </p>
+    <p>
+        From catching an overlooked configuration issue before it impacted production, to jumping into a weekend call to help a customer hit their go-live milestone—these stories do more than inspire. They set the tone, reinforce values, and remind everyone what customer obsession looks like in real life.
+    </p>
+    <p>
+        Over time, this simple ritual has done something remarkable: it’s made customer-centric thinking contagious. New hires get onboarded faster. Veterans stay energized. And customers? They feel the difference.
+    </p>
+    <blockquote>
+        <p>"When I hear how others are helping customers, I walk away thinking, How can I raise my game this week?"</p>
+        <footer>Senior Cloud Engineer</footer>
+    </blockquote>
+    <p>
+        The result: customer obsession stops being an abstract principle—it becomes part of the team’s muscle memory.
+    </p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+    // --- Element References ---
+    const downloadButton = document.getElementById('download-obsession-button');
+    const contentToDownload = document.getElementById('downloadable-content');
+    const calloutTitleElement = document.getElementById('callout-title'); // Get title element
+    const bodyElement = document.body;
+
+    // --- DOWNLOAD FUNCTIONALITY ---
+    function downloadContentAsPNG() {
+        if (!contentToDownload || !calloutTitleElement) { // Check for title element too
+            console.error("Required elements for download not found!");
+            return;
+        }
+
+        // --- NO HIDING NEEDED for external button ---
+
+        // Temporarily set body background to transparent
+        const originalBodyBackground = bodyElement.style.backgroundColor;
+        bodyElement.style.backgroundColor = 'transparent';
+
+        window.getComputedStyle(contentToDownload).getPropertyValue('width'); // Force reflow
+
+        // Capture the callout box
+        html2canvas(contentToDownload, {
+            backgroundColor: null, // Ensure canvas background is transparent
+            useCORS: true,
+            logging: false,
+            scale: window.devicePixelRatio || 1 // Use device pixel ratio
+         })
+        .then(canvas => {
+            // Restore body background
+            bodyElement.style.backgroundColor = originalBodyBackground;
+
+            // --- Generate Filename ---
+            // Remove the pin emoji from the title text before creating filename
+            const titleText = calloutTitleElement.textContent.replace("📌 ", "").trim();
+            let filename = titleText ? titleText : 'customer_obsession'; // Use title or default
+            // Sanitize: remove invalid chars, replace whitespace with '_', truncate
+            filename = filename.replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, '_').substring(0, 60);
+            filename += '.png'; // Add extension
+
+
+            // Trigger download
+            const link = document.createElement('a');
+            link.download = filename; // Use the generated filename
+            link.href = canvas.toDataURL('image/png');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        })
+        .catch(error => {
+             // Restore body background on error
+            bodyElement.style.backgroundColor = originalBodyBackground;
+
+            console.error('Error capturing content:', error);
+            alert('Sorry, could not download the content image.');
+        });
+    }
+
+    // --- EVENT LISTENER ---
+    if (downloadButton) {
+        downloadButton.addEventListener('click', downloadContentAsPNG);
+    } else {
+        console.error("Download button not found!");
+    }
+
+</script>
+
+</body>
+</html>

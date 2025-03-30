@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Table: Churn Prevention Strategies</title>
+<style>
+    body { /* Basic body style for background handling during download */
+        margin: 0;
+        padding: 20px;
+        background-color: #ffffff; /* Default background */
+        font-family: sans-serif; /* Keep fonts simple and readable */
+    }
+
+    /* Wrapper for the action button above the box */
+    .action-wrapper {
+        text-align: center; /* Center the button */
+        margin-bottom: 15px; /* Space below the button, above the box */
+    }
+
+    /* Download Button Styling */
+    .download-button {
+        /* Keep button style consistent, smaller size for this context */
+        padding: 5px 10px;
+        background-color: #eee;
+        color: #333;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.8em;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        transition: background-color 0.3s ease, border-color 0.3s ease; /* Smooth hover */
+    }
+    .download-button:hover {
+        background-color: #ddd;
+        border-color: #bbb;
+    }
+
+    /* Callout Box Styling */
+    .callout-box {
+        /* Standard box styling to make important tables like this stand out */
+        border: 2px solid #f0f0f0; /* Light border */
+        background-color: #f9f9f9; /* Light background */
+        padding: 10px 10px 10px 10px; /* Consistent padding */
+        margin: 0 auto; /* Center horizontally */
+        border-radius: 8px; /* Soft corners */
+        font-family: sans-serif; /* Match body font */
+        max-width: 800px; /* Keep it readable */
+    }
+    .callout-box h3 {
+        /* Title inside the box */
+        margin-top: 0; /* Remove default top margin */
+        color: #333;
+        text-align: center; /* Center the title */
+        margin-bottom: 15px; /* Space below title, above table */
+    }
+    .churn-strategies-table { /* Specific class for this table */
+        /* Table styling - keep it clean and functional */
+        width: 100%;
+        border-collapse: collapse; /* Clean lines, no double borders */
+        margin-bottom: 0; /* Remove margin since it's the last element in the box */
+    }
+    .churn-strategies-table th,
+    .churn-strategies-table td {
+        /* Cell styling - padding for space, border for structure */
+        border: 1px solid #ddd;
+        padding: 10px; /* A bit more padding for table data */
+        text-align: left; /* Standard left align for table text */
+        vertical-align: top; /* Align content top, looks better if text wraps */
+        width: 50%; /* Aim for equal width columns */
+    }
+    .churn-strategies-table th {
+        /* Header style - make them distinct */
+        background-color: #e9e9e9;
+        font-weight: bold;
+    }
+    /* Optional zebra striping - improves readability on longer tables */
+    .churn-strategies-table tr:nth-child(even) {
+        background-color: #fdfdfd; /* Very subtle difference */
+    }
+</style>
+</head>
+<body>
+
+<div class="action-wrapper">
+    <button id="download-table" class="download-button">Download Strategies PNG</button>
+</div>
+
+<div class="callout-box" id="downloadable-content">
+    <h3>📌 Churn Prevention Strategies</h3>
+    <table class="churn-strategies-table">
+        <thead>
+            <tr>
+                <th>Issue Indicator</th> <th>Proactive Response</th> </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Reduced product usage</td> <td>Proactive outreach to address adoption blockers</td> </tr>
+            <tr>
+                <td>Negative survey feedback</td> <td>Immediate follow-up by a customer success manager</td> </tr>
+            <tr>
+                <td>Lack of engagement</td> <td>Personalized check-ins to reignite customer interest</td> </tr>
+            </tbody>
+    </table>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+    // --- Element References ---
+    // Grab the button, the content box to screenshot, and the body element.
+    const downloadButton = document.getElementById('download-table');
+    const contentToDownload = document.getElementById('downloadable-content'); // This is the callout box
+    const bodyElement = document.body; // Needed for background manipulation
+
+    // --- DOWNLOAD FUNCTIONALITY ---
+    // This function runs when the download button is clicked.
+    function downloadContentAsPNG() {
+        // Sanity check: Make sure the content box actually exists before proceeding.
+        if (!contentToDownload) {
+            console.error("Cannot download: Content container not found!");
+            alert("Error: Could not find content to download.");
+            return; // Stop if the element isn't there
+        }
+        console.log("Initiating PNG download for churn strategies...");
+
+        // Button is outside the captured area, so no hiding/showing needed.
+
+        // --- Prepare for Capture ---
+        // Make body background transparent temporarily for a clean capture of just the box.
+        const originalBodyBackground = bodyElement.style.backgroundColor; // Store the original!
+        bodyElement.style.backgroundColor = 'transparent'; // Set transparent
+
+        // Force the browser to calculate styles - helps prevent weird rendering issues in the capture.
+        window.getComputedStyle(contentToDownload).getPropertyValue('width');
+
+        // --- Capture the Callout Box ---
+        // Use html2canvas to take a 'screenshot' of the specified element.
+        html2canvas(contentToDownload, {
+            backgroundColor: null, // Let the element's own background show through.
+            useCORS: true,         // Good practice if external resources were involved.
+            logging: false,        // Keep the console clean.
+            scale: window.devicePixelRatio || 1 // Capture at device resolution for better quality.
+         })
+        .then(canvas => {
+            // --- Restore Background (Success Case) ---
+            console.log("Content captured.");
+            bodyElement.style.backgroundColor = originalBodyBackground; // Put the original background back!
+
+            // --- Trigger Download ---
+            // Create a temporary link element to trigger the browser's download action.
+            const link = document.createElement('a');
+            // Set a specific, useful filename for the downloaded image.
+            link.download = 'churn_prevention_strategies.png';
+            link.href = canvas.toDataURL('image/png'); // Get the image data from the canvas.
+            document.body.appendChild(link); // Add the link to the document.
+            link.click(); // Programmatically click the link.
+            document.body.removeChild(link); // Clean up by removing the temporary link.
+            console.log("Download triggered.");
+        })
+        .catch(error => {
+            // --- Restore Background (Error Case) ---
+            // IMPORTANT: Always restore the background, even if the capture failed!
+            bodyElement.style.backgroundColor = originalBodyBackground;
+
+            console.error('Error capturing content:', error);
+            // Let the user know something went wrong.
+            alert('Sorry, could not download the content image due to an error.');
+        });
+    }
+
+    // --- EVENT LISTENER ---
+    // Attach the download function to the button's click event.
+    if (downloadButton) {
+        // Make sure the function name here matches the function defined above!
+        downloadButton.addEventListener('click', downloadContentAsPNG);
+    } else {
+        // Log an error if the button wasn't found for some reason.
+        console.error("Download button element could not be found!");
+    }
+
+</script>
+
+</body>
+</html>

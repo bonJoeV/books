@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Small Automation, Big Impact</title>
+<style>
+  /* --- Callout Box Styling --- */
+  .callout-box {
+    /* Standard box styling - great for highlighting these quick win examples */
+    border: 2px solid #f0f0f0; /* Light gray border */
+    background-color: #f9f9f9; /* Very light gray background */
+    /* Padding: top, right, bottom, left */
+    padding: 20px 20px 15px 20px;
+    margin: 20px auto; /* Center box, add space above/below */
+    border-radius: 8px; /* Slightly rounded corners */
+    font-family: sans-serif; /* Keep font simple */
+    max-width: 800px; /* Constrain width */
+  }
+  .callout-box h3 {
+    /* Styling for the title inside the box */
+    margin-top: 0; /* Reset default margin */
+    color: #333;
+    text-align: center; /* Center the title */
+    margin-bottom: 15px; /* Space below heading */
+  }
+  /* Add the pin automatically via CSS */
+   .callout-box h3::before {
+       content: "📌 "; /* Pin it! Small things matter. */
+   }
+  .callout-box p { /* Style for paragraphs within the box */
+    color: #333; /* Standard text color */
+    line-height: 1.6; /* Readability is key */
+    margin-top: 0;
+    margin-bottom: 1em; /* Standard space below paragraphs */
+    text-align: left; /* Align story text left for easy reading */
+  }
+   /* Remove bottom margin from the very last element (likely a paragraph) in the box */
+  .callout-box > :last-child {
+    /* Keeps the padding at the bottom looking tidy */
+    margin-bottom: 0;
+  }
+</style>
+</head>
+<body>
+
+<div class="callout-box">
+  <h3>📌 Small Automation, Big Impact</h3>
+  <p>
+    Sometimes, a single well-placed solution can make all the difference. In this case, we helped a customer identify and automate just one repetitive, manual task in their workflow. The result? They reclaimed 5 hours every week—time they could now reinvest into higher-value work. </p>
+  <p>
+    This quick win not only delivered immediate results but also served as a powerful proof point for the value of our solution. By solving a specific pain point early, we built trust and momentum, instantly validating their purchase and opening the door to broader adoption. </p>
+</div>
+
+</body>
+</html>

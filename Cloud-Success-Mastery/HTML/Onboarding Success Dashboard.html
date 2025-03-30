@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Onboarding Success Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <style>
+        /* --- Light Theme (Default) Variables --- */
+        :root {
+            /* Setting up colors with variables. Makes theme switching a snap. */
+            --bg-color: #f8f9fa;
+            --card-bg-color: #ffffff;
+            --text-color: #212529;
+            --heading-color: #212529;
+            --primary-accent: #0d6efd; /* Blue */
+            --secondary-accent: #0dcaf0; /* Cyan */
+            --border-color: #dee2e6;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --green-light: #198754;
+            --yellow-light: #ffc107;
+            --red-light: #dc3545;
+            /* Chart Specific - Light */
+            --chart-axis-text: '#495057';
+            --chart-grid-line: 'rgba(0, 0, 0, 0.1)';
+            --chart-axis-line: '#ced4da';
+            --chart-point-border: '#ffffff';
+            --chart-tooltip-bg: 'rgba(0, 0, 0, 0.8)';
+            --chart-tooltip-text: '#ffffff';
+        }
+
+        /* --- Dark Theme Variables --- */
+        .dark-theme {
+            /* Dark mode overrides. Give the people options! */
+            --bg-color: #121212;
+            --card-bg-color: #1e1e1e;
+            --text-color: #e0e0e0;
+            --heading-color: #ffffff;
+            --primary-accent: #bb86fc; /* Purple */
+            --secondary-accent: #03dac6; /* Teal */
+            --border-color: #333333;
+            --shadow-color: rgba(0, 0, 0, 0.2);
+            --green-light: #4CAF50;
+            --yellow-light: #FFC107;
+            --red-light: #F44336;
+             /* Chart Specific - Dark */
+            --chart-axis-text: '#e0e0e0';
+            --chart-grid-line: 'rgba(255, 255, 255, 0.2)';
+            --chart-axis-line: '#aaaaaa';
+            --chart-point-border: '#bb86fc'; /* Match line color */
+        }
+
+        body {
+            /* Basic body setup. Colors driven by variables. */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; /* System fonts look clean */
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6; /* Readability */
+            transition: background-color 0.3s ease, color 0.3s ease; /* Smooth theme transitions */
+        }
+
+        /* Wrapper for top-right buttons */
+        .top-buttons {
+            /* Stick buttons top-right. Keep 'em handy but out of the way. */
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px; /* Space between buttons */
+            z-index: 10; /* Ensure they stay on top */
+        }
+
+        /* Shared style for buttons in the top-right */
+        .theme-toggle-button,
+        .download-button {
+            /* Consistent button appearance */
+            padding: 8px 12px;
+            background-color: var(--card-bg-color);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            box-shadow: 0 2px 4px var(--shadow-color);
+            transition: opacity 0.3s ease, background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; /* Transition everything */
+        }
+        .theme-toggle-button:hover,
+        .download-button:hover {
+            opacity: 0.8; /* Simple hover effect */
+        }
+
+
+        .dashboard-container {
+            /* Main container for the dashboard content */
+            max-width: 1200px;
+            margin: 20px auto; /* Center */
+            padding: 20px;
+            padding-top: 80px; /* Extra top padding needed to clear the absolute buttons */
+            position: relative; /* Positioning context */
+        }
+
+        h1 {
+            /* Dashboard title - Onboarding is CRITICAL! Make it clear. */
+            color: var(--heading-color);
+            text-align: center;
+            margin-bottom: 40px; /* Space before metrics */
+        }
+
+        .metrics-grid {
+            /* Grid layout for the metric cards */
+            display: flex;
+            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+            justify-content: center; /* Center items nicely */
+            gap: 25px; /* Space between cards */
+            padding: 0 10px; /* Prevent touching edges */
+        }
+
+        .metric-card {
+            /* Individual card styling */
+            background-color: var(--card-bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px; /* Soft corners */
+            padding: 25px;
+            box-shadow: 0 4px 8px var(--shadow-color); /* Give depth */
+            display: flex;
+            flex-direction: column; /* Stack content vertically */
+            align-items: center; /* Center horizontally */
+            text-align: center;
+            flex: 0 1 350px; /* Control card size but allow flex */
+            transition: background-color 0.3s ease, border-color 0.3s ease; /* Smooth theme transition */
+        }
+
+        .metric-card h2 {
+            /* Card title styling */
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: var(--primary-accent); /* Use theme accent */
+            font-size: 1.4em;
+            width: 100%;
+            min-height: 2.8em; /* Consistent height for alignment */
+            display: flex; /* Use flex for vertical centering */
+            align-items: center;
+            justify-content: center;
+        }
+
+        .current-value-section {
+            /* Holds the big number and indicators */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            width: 100%;
+        }
+
+        .current-value {
+            /* The main KPI number - make it stand out */
+            font-size: 2.4em;
+            font-weight: bold;
+            color: var(--heading-color);
+            margin-right: 10px; /* Space before indicators */
+        }
+
+        .traffic-light {
+            /* Simple R/Y/G visual indicator */
+            width: 20px;
+            height: 20px;
+            border-radius: 50%; /* Circle */
+            display: inline-block;
+            margin-right: 10px; /* Space before trend arrow */
+            border: 1px solid rgba(0,0,0,0.1); /* Subtle border */
+        }
+        /* Color is set by class */
+        .traffic-light.green { background-color: var(--green-light); }
+        .traffic-light.yellow { background-color: var(--yellow-light); }
+        .traffic-light.red { background-color: var(--red-light); }
+
+        .trend-indicator {
+            /* Up/Down/Stable arrow indicator */
+            font-size: 1.5em;
+        }
+        /* Color set by class */
+        .trend-indicator.up { color: var(--green-light); }
+        .trend-indicator.down { color: var(--red-light); }
+        .trend-indicator.stable { color: var(--yellow-light); }
+
+        .chart-container {
+            /* Container for the mini charts */
+            width: 100%;
+            height: 180px; /* Fixed height */
+            margin-bottom: 15px; /* Space before action link */
+        }
+
+        .action-link a {
+            /* Style the call-to-action link */
+            color: var(--secondary-accent); /* Use secondary accent */
+            text-decoration: none;
+            font-weight: bold;
+            border: 1px solid var(--secondary-accent);
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; /* Smooth transitions */
+            display: inline-block; /* Allows padding */
+            font-size: 1em;
+        }
+        .action-link a:hover {
+            /* Invert colors on hover */
+            background-color: var(--secondary-accent);
+            color: var(--card-bg-color); /* Adapt text color based on theme */
+        }
+        /* Dark theme specific hover text color */
+        .dark-theme .action-link a:hover {
+             color: #000000; /* Black text on teal */
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="top-buttons" id="top-buttons-wrapper">
+        <button id="download-dashboard" class="download-button">Download PNG</button>
+         <button id="theme-toggle" class="theme-toggle-button">Toggle Theme</button>
+    </div>
+
+    <div class="dashboard-container" id="downloadable-content">
+        <h1>Onboarding Success Dashboard</h1> <div class="metrics-grid">
+
+            <div class="metric-card">
+                <h2>CSAT Post-Onboarding</h2> <div class="current-value-section">
+                    <span class="current-value">86%</span>
+                    <span class="traffic-light green"></span> <span class="trend-indicator up">&#9650;</span> </div>
+                <div class="chart-container">
+                    <canvas id="csatPostOnboardingChart"></canvas> </div>
+                <div class="action-link">
+                    <a href="#" target="_blank">Analyze Onboarding Feedback</a> </div>
+            </div>
+
+            <div class="metric-card">
+                <h2>Adoption Rate (First 60 Days)</h2> <div class="current-value-section">
+                    <span class="current-value">68%</span>
+                    <span class="traffic-light yellow"></span> <span class="trend-indicator up">&#9650;</span> </div>
+                <div class="chart-container">
+                    <canvas id="adoptionRateChart"></canvas>
+                </div>
+                <div class="action-link">
+                    <a href="#" target="_blank">Review Feature Usage Guides</a> </div>
+            </div>
+
+            <div class="metric-card">
+                <h2>Time-to-Value (TTV)</h2> <div class="current-value-section">
+                    <span class="current-value">14 days</span> <span class="traffic-light green"></span> <span class="trend-indicator down">&#9660;</span> </div>
+                <div class="chart-container">
+                    <canvas id="ttvChart"></canvas>
+                </div>
+                <div class="action-link">
+                    <a href="#" target="_blank">Streamline Setup Process</a> </div>
+            </div>
+
+            <div class="metric-card">
+                <h2>Retention Rate (90 Days Post-Onboarding)</h2> <div class="current-value-section">
+                    <span class="current-value">91%</span>
+                    <span class="traffic-light yellow"></span> <span class="trend-indicator down">&#9660;</span> </div>
+                <div class="chart-container">
+                    <canvas id="retentionRateChart"></canvas>
+                </div>
+                <div class="action-link">
+                    <a href="#" target="_blank">Engage Low-Adoption Cohorts</a> </div>
+            </div>
+
+        </div> </div> <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <script>
+        // --- Element References ---
+        // Grab all the necessary DOM elements.
+        const themeToggleButton = document.getElementById('theme-toggle');
+        const downloadDashboardButton = document.getElementById('download-dashboard');
+        const topButtonsWrapper = document.getElementById('top-buttons-wrapper'); // Need this to hide buttons for download
+        const dashboardContainer = document.getElementById('downloadable-content'); // The area to capture
+        const bodyElement = document.body; // For theme class toggling
+
+        // --- State Variables ---
+        let currentTheme = 'light'; // Track the active theme
+        let chartInstances = {}; // Store references to chart objects for updates/destruction
+
+        // --- Color Definitions for Charts ---
+        // Central object for theme-specific chart colors. Makes updates easy.
+        const chartColors = {
+            light: { axisText: '#495057', gridLine: 'rgba(0, 0, 0, 0.1)', axisLine: '#ced4da', lineColor: '#0d6efd', pointBg: '#0d6efd', pointBorder: '#ffffff', tooltipBg: 'rgba(0, 0, 0, 0.8)', tooltipText: '#ffffff' },
+            dark: { axisText: '#e0e0e0', gridLine: 'rgba(255, 255, 255, 0.2)', axisLine: '#aaaaaa', lineColor: '#bb86fc', pointBg: '#ffffff', pointBorder: '#bb86fc', tooltipBg: 'rgba(0, 0, 0, 0.8)', tooltipText: '#ffffff' }
+        };
+
+        // --- THEME TOGGLE LOGIC ---
+        // Function to apply the chosen theme and update charts accordingly.
+        function applyTheme(theme) {
+            console.log(`Applying theme: ${theme}`);
+            currentTheme = theme; // Update global theme state
+            // Add/remove the dark theme class on the body
+            if (theme === 'dark') {
+                bodyElement.classList.add('dark-theme');
+                if(themeToggleButton) themeToggleButton.textContent = 'Switch to Light Mode'; // Update button text
+            } else {
+                bodyElement.classList.remove('dark-theme');
+                 if(themeToggleButton) themeToggleButton.textContent = 'Switch to Dark Mode';
+            }
+            // Save preference to local storage
+            localStorage.setItem('dashboardTheme', theme);
+
+            // --- IMPORTANT: Update charts ---
+            // Destroy existing chart instances before re-rendering.
+            console.log("Destroying old charts for theme update...");
+            Object.values(chartInstances).forEach(chart => { if(chart) chart.destroy(); });
+            chartInstances = {}; // Reset the storage object
+            // Re-render charts with the new theme colors.
+            renderCharts();
+            console.log("Charts re-rendered with new theme.");
+        }
+
+        // --- CHART RENDERING LOGIC ---
+        // Function to get common Chart.js options based on the current theme.
+        function getChartOptions() {
+            const colors = chartColors[currentTheme]; // Get colors for the active theme
+            // Define base chart options - keeps chart creation DRY.
+            return {
+                responsive: true, // Make charts adapt to container size
+                maintainAspectRatio: false, // Don't force aspect ratio, fill container height
+                plugins: {
+                    legend: { display: false }, // Hide default legend - usually redundant for simple charts
+                    tooltip: { // Style tooltips
+                        enabled: true,
+                        backgroundColor: colors.tooltipBg,
+                        titleColor: colors.tooltipText,
+                        bodyColor: colors.tooltipText
+                    }
+                },
+                scales: { // Axis configuration
+                    x: { // X-axis (Months)
+                        ticks: { color: colors.axisText, maxRotation: 0, autoSkipPadding: 12 }, // Style ticks
+                        grid: { color: colors.gridLine, borderColor: colors.axisLine, tickColor: colors.axisLine } // Style grid lines
+                    },
+                    y: { // Y-axis (Values)
+                        ticks: { color: colors.axisText, precision: 0 }, // Style ticks (no decimals default)
+                        grid: { color: colors.gridLine, borderColor: colors.axisLine, tickColor: colors.axisLine }, // Style grid lines
+                        beginAtZero: false // Default, override per chart if needed (e.g., adoption rate)
+                    }
+                }
+            };
+        }
+
+        // Function to get the configuration for a line chart dataset.
+        function getLineChartDatasetConfig(data, label) {
+             const colors = chartColors[currentTheme]; // Get theme colors
+             // Define how the line, points, etc., should look.
+             return {
+                 label: label, // Used in tooltips
+                 data: data, // The actual data points
+                 borderColor: colors.lineColor, // Line color
+                 borderWidth: 2, // Line thickness
+                 tension: 0.1, // Slight curve for aesthetics
+                 pointBackgroundColor: colors.pointBg, // Point fill
+                 pointBorderColor: colors.pointBorder, // Point border
+                 pointBorderWidth: (currentTheme === 'light' ? 1.5 : 1), // Slightly thicker border in light mode
+                 pointRadius: 2.5, // Size of points
+                 pointHoverRadius: 4, // Size on hover
+                 pointHoverBackgroundColor: colors.pointBg,
+                 pointHoverBorderColor: colors.pointBorder
+            };
+        }
+
+        // Main function to render all charts on the dashboard.
+        function renderCharts() {
+            const options = getChartOptions(); // Get base options for the current theme
+
+            // --- Generate Labels (Last 12 Months) ---
+            // Dynamically create labels for the X-axis.
+            const now = new Date();
+            const monthLabels = Array.from({ length: 12 }, (_, i) => {
+                const d = new Date(now); d.setMonth(now.getMonth() - (11 - i)); const year = d.getFullYear().toString().slice(-2); const month = d.toLocaleString('default', { month: 'short' }); return (d.getMonth() === 0 || i === 0) ? `${month} '${year}` : month;
+            });
+
+            // --- Sample Data (Replace with dynamic data fetch!) ---
+            // Placeholder data arrays for demonstration.
+            const csatPostOnboardingData = [80, 82, 81, 83, 85, 84, 86, 85, 87, 88, 86, 86];
+            const adoptionRateData = [55, 58, 60, 62, 61, 63, 65, 66, 67, 65, 68, 68];
+            const ttvData = [20, 19, 18, 18, 17, 16, 15, 16, 14, 15, 14, 14]; // Lower TTV is better
+            const retentionRateData = [95, 94, 94, 93, 92, 93, 91, 90, 91, 92, 90, 91];
+
+            // --- Create/Update Charts ---
+            // Get canvas context and create each chart instance. Store instance in chartInstances.
+
+            // CSAT Chart
+            const csatCtx = document.getElementById('csatPostOnboardingChart')?.getContext('2d');
+            if (csatCtx) {
+                chartInstances.csatPostOnboarding = new Chart(csatCtx, {
+                    type: 'line',
+                    data: { labels: monthLabels, datasets: [getLineChartDatasetConfig(csatPostOnboardingData, 'CSAT Post-Onboarding')] },
+                    // Custom options: Set suggested Y-axis min, format ticks as percentage.
+                    options: { ...options, scales: { ...options.scales, y: { ...options.scales.y, suggestedMin: 75, ticks: { ...options.scales.y.ticks, callback: value => value + '%' } } } }
+                });
+            }
+
+            // Adoption Rate Chart
+            const adoptionCtx = document.getElementById('adoptionRateChart')?.getContext('2d');
+             if (adoptionCtx) {
+                 chartInstances.adoptionRate = new Chart(adoptionCtx, {
+                     type: 'line',
+                     data: { labels: monthLabels, datasets: [getLineChartDatasetConfig(adoptionRateData, 'Adoption Rate')] },
+                      // Custom options: Start Y-axis at 0, suggest max 100, format as percentage.
+                      options: { ...options, scales: { ...options.scales, y: { ...options.scales.y, beginAtZero: true, suggestedMax: 100, ticks: { ...options.scales.y.ticks, callback: value => value + '%' } } } }
+                 });
+             }
+
+             // Time-to-Value Chart
+             const ttvCtx = document.getElementById('ttvChart')?.getContext('2d');
+             if (ttvCtx) {
+                 chartInstances.ttv = new Chart(ttvCtx, {
+                     type: 'line',
+                     data: { labels: monthLabels, datasets: [getLineChartDatasetConfig(ttvData, 'TTV')] },
+                      // Custom options: REVERSE Y-axis (lower is better!), format ticks with 'd' for days.
+                      options: { ...options, scales: { ...options.scales, y: { ...options.scales.y, reverse: true, ticks: { ...options.scales.y.ticks, callback: value => value + 'd' } } } }
+                 });
+             }
+
+             // Retention Rate Chart
+             const retentionCtx = document.getElementById('retentionRateChart')?.getContext('2d');
+             if (retentionCtx) {
+                 chartInstances.retentionRate = new Chart(retentionCtx, {
+                     type: 'line',
+                     data: { labels: monthLabels, datasets: [getLineChartDatasetConfig(retentionRateData, 'Retention Rate')] },
+                     // Custom options: Set suggested Y-axis min, format as percentage.
+                     options: { ...options, scales: { ...options.scales, y: { ...options.scales.y, suggestedMin: 80, ticks: { ...options.scales.y.ticks, callback: value => value + '%' } } } }
+                 });
+             }
+
+             // --- Comprehensive Cleanup (Safety check for stray chart instances) ---
+             // Ensure only the expected chart keys exist in our instances object.
+             const expectedKeys = ['csatPostOnboarding', 'adoptionRate', 'ttv', 'retentionRate'];
+             Object.keys(chartInstances).forEach(key => {
+                 if (!expectedKeys.includes(key)) {
+                     console.warn(`Deleting unexpected chart instance key: ${key}`);
+                     delete chartInstances[key]; // Remove unexpected keys if any somehow got added
+                 }
+             });
+        }
+
+        // --- DOWNLOAD FUNCTIONALITY ---
+        // Function to capture the dashboard container as a PNG.
+        function downloadDashboardAsPNG() {
+            // Check required elements exist (dashboard container and the button wrapper to hide).
+            if (!dashboardContainer || !topButtonsWrapper) {
+                console.error("Download failed: Required elements (dashboard or button wrapper) not found!");
+                alert("Error: Could not find content to download.");
+                return;
+            }
+            console.log("Initiating dashboard download...");
+
+            // --- HIDE BUTTONS ---
+            // Temporarily hide the theme/download buttons so they aren't in the screenshot.
+            const originalButtonsDisplay = topButtonsWrapper.style.display; // Store original display style
+            topButtonsWrapper.style.display = 'none'; // Hide the wrapper
+
+            // --- Prepare for Capture ---
+            // Standard background transparency trick.
+            const originalBodyBackground = bodyElement.style.backgroundColor;
+            bodyElement.style.backgroundColor = 'transparent';
+
+            // Force style calculation.
+            window.getComputedStyle(dashboardContainer).getPropertyValue('width');
+
+            // --- Capture the Container ---
+            html2canvas(dashboardContainer, { // Target the main dashboard container
+                backgroundColor: null, // Use element's background, allow transparency
+                useCORS: true,         // Standard practice
+                logging: false,        // Keep console quiet
+                scale: window.devicePixelRatio || 1 // Capture at screen resolution
+             })
+            .then(canvas => {
+                // --- Restore Styles (Success Case) ---
+                console.log("Dashboard captured successfully.");
+                bodyElement.style.backgroundColor = originalBodyBackground; // Restore body background
+                topButtonsWrapper.style.display = originalButtonsDisplay || ''; // Restore button visibility
+
+                // --- Trigger Download ---
+                // Standard link-click method.
+                const link = document.createElement('a');
+                link.download = 'onboarding_success_dashboard.png'; // Specific filename
+                link.href = canvas.toDataURL('image/png');
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                console.log("Download triggered.");
+            })
+            .catch(error => {
+                 // --- Restore Styles (Error Case) ---
+                 // IMPORTANT: Always restore styles, even on failure!
+                 bodyElement.style.backgroundColor = originalBodyBackground;
+                 topButtonsWrapper.style.display = originalButtonsDisplay || ''; // Restore button visibility
+
+                console.error('Error capturing dashboard:', error);
+                alert('Sorry, could not download the dashboard image. An error occurred.');
+            });
+        }
+
+        // --- EVENT LISTENERS ---
+        // Wire up the theme toggle button.
+        if (themeToggleButton) {
+             themeToggleButton.addEventListener('click', () => { applyTheme(currentTheme === 'light' ? 'dark' : 'light'); });
+        }
+        // Wire up the download button.
+        if (downloadDashboardButton) {
+              downloadDashboardButton.addEventListener('click', downloadDashboardAsPNG);
+        }
+
+        // --- INITIALIZATION ON LOAD ---
+        // Set up the correct theme and render charts when the page is ready.
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("DOM loaded. Initializing dashboard theme and charts.");
+            // Determine initial theme (check local storage, then system preference, default light).
+            const savedTheme = localStorage.getItem('dashboardTheme');
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            let initialTheme = 'light';
+            if (savedTheme) { initialTheme = savedTheme; }
+            else if (prefersDark) { initialTheme = 'dark'; }
+
+            // Apply initial theme *without* transition flicker.
+            // Set global state variable directly.
+            currentTheme = initialTheme;
+            // Apply class and button text directly (mimics applyTheme without chart re-render yet).
+            if (initialTheme === 'dark') {
+                bodyElement.classList.add('dark-theme');
+                 if(themeToggleButton) themeToggleButton.textContent = 'Switch to Light Mode';
+            } else {
+                bodyElement.classList.remove('dark-theme'); // Ensure light if not dark
+                 if(themeToggleButton) themeToggleButton.textContent = 'Switch to Dark Mode';
+            }
+
+            // Render initial charts now that theme is set.
+            renderCharts();
+            console.log("Initial charts rendered.");
+        });
+
+    </script>
+
+</body>
+</html>

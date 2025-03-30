@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Checklist: 7 Steps to a World-Class Onboarding Experience</title>
+<style>
+    body { /* Basic body style - simple background needed for capture transparency */
+        margin: 0;
+        padding: 20px;
+        background-color: #ffffff; /* Default background */
+        font-family: sans-serif; /* Keep it standard */
+    }
+
+    /* Wrapper for the action button above the box */
+    .action-wrapper {
+        text-align: center; /* Center the button */
+        margin-bottom: 15px; /* Space below button, above checklist */
+    }
+
+    /* Download Button Styling */
+    .download-button {
+        /* Standard small button style */
+        padding: 5px 10px;
+        background-color: #eee;
+        color: #333;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.8em;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        transition: background-color 0.3s ease, border-color 0.3s ease; /* Smooth hover */
+    }
+    .download-button:hover {
+        background-color: #ddd;
+        border-color: #bbb;
+    }
+
+    /* Callout Box Styling - Contains the checklist */
+    .callout-box {
+        border: 2px solid #f0f0f0; /* Light border */
+        background-color: #f9f9f9; /* Light background */
+        padding: 20px 20px 15px 20px; /* Padding around the content */
+        margin: 0 auto; /* Center the box horizontally */
+        border-radius: 8px; /* Soft corners */
+        font-family: sans-serif; /* Match base font */
+        text-align: center; /* Center inline-block children (like the UL) */
+        overflow: hidden; /* Prevent content spill */
+        max-width: 500px; /* Keep checklist width reasonable */
+        /* Position relative removed, relying on centering */
+    }
+
+    .callout-box h3 {
+        /* Checklist title */
+        margin-top: 0;
+        color: #333;
+        text-align: center; /* Explicitly center title */
+        margin-bottom: 15px; /* Space below title */
+    }
+    .callout-box ul { /* The list container itself */
+        /* This combo centers the list block within the centered parent */
+        display: inline-block;
+        text-align: left; /* Align list item text left */
+        color: #333;
+        line-height: 1.6; /* Readability */
+        margin: 0; /* Reset default margins */
+        padding: 0; /* Reset default padding */
+        list-style-type: none; /* Remove default bullets */
+    }
+    .callout-box li {
+        /* Use flexbox for easy alignment of checkmark and text */
+        display: flex;
+        align-items: flex-start; /* Align items to the top */
+        margin-bottom: 0.9em; /* Space between checklist items */
+    }
+    .callout-box li .checkmark {
+        /* Fixed space for the checkmark emoji */
+        flex: 0 0 1.8em; /* Don't grow, don't shrink, fixed width */
+        text-align: left; /* Keep checkmark left-aligned within its space */
+        line-height: 1.6; /* Match text line-height */
+    }
+    .callout-box li .item-text {
+        /* The actual checklist item text */
+        text-align: left;
+        margin-left: 0.5em; /* Space after the checkmark */
+        line-height: 1.6; /* Match checkmark line-height */
+        /* Assuming short checklist items. If they get long, remove this. */
+        white-space: nowrap;
+    }
+    /* Remove bottom margin from the last list item for tighter spacing */
+    .callout-box li:last-child {
+        margin-bottom: 0;
+    }
+</style>
+</head>
+<body>
+
+<div class="action-wrapper">
+    <button id="download-checklist" class="download-button">Download Checklist PNG</button>
+</div>
+
+<div class="callout-box" id="downloadable-content">
+    <h3>📌 7 Steps to a World-Class Onboarding Experience</h3>
+    <ul>
+        <li><span class="checkmark">✅</span><span class="item-text">Personalized Welcome Interaction</span></li> <li><span class="checkmark">✅</span><span class="item-text">Clearly Identified Quick Win</span></li> <li><span class="checkmark">✅</span><span class="item-text">Flexible & Customized Training</span></li> <li><span class="checkmark">✅</span><span class="item-text">Early & Proactive Support</span></li> <li><span class="checkmark">✅</span><span class="item-text">Regular Adoption Checkpoints</span></li> <li><span class="checkmark">✅</span><span class="item-text">Consistent Progress Celebrations</span></li> <li><span class="checkmark">✅</span><span class="item-text">Clear Path to Continued Success</span></li> </ul>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+    // --- Element References ---
+    // Grab the button, the checklist container, and the body.
+    const downloadButton = document.getElementById('download-checklist');
+    const contentToDownload = document.getElementById('downloadable-content'); // The callout box
+    const bodyElement = document.body; // For background handling
+
+    // --- DOWNLOAD FUNCTIONALITY ---
+    // Function to capture the checklist box as a PNG.
+    function downloadChecklistAsPNG() {
+        // Gotta make sure the content box actually exists.
+        if (!contentToDownload) {
+            console.error("Cannot download: Checklist container not found!");
+            alert("Error: Could not find checklist content to download.");
+            return; // Stop if it's missing
+        }
+        console.log("Initiating PNG download for checklist...");
+
+        // Button is outside the capture area - no need to hide/show it.
+
+        // --- Prepare for Capture ---
+        // Standard routine: store original bg, set transparent for capture.
+        const originalBodyBackground = bodyElement.style.backgroundColor;
+        bodyElement.style.backgroundColor = 'transparent';
+
+        // Force style computation before capture - safety measure.
+        window.getComputedStyle(contentToDownload).getPropertyValue('width');
+
+        // --- Capture the Checklist Container ---
+        html2canvas(contentToDownload, { // Target the specific box
+            backgroundColor: null, // Use element's background, allow transparency
+            useCORS: true,         // Standard option
+            logging: false,        // Keep console clean
+            scale: window.devicePixelRatio || 1 // Capture at screen resolution
+         })
+        .then(canvas => {
+            // --- Restore Background (Success) ---
+            console.log("Checklist captured.");
+            bodyElement.style.backgroundColor = originalBodyBackground; // Put the background back!
+
+            // --- Trigger Download ---
+            // Create temp link, set filename, set data URL, click, remove.
+            const link = document.createElement('a');
+            link.download = 'onboarding_checklist.png'; // Specific filename for this checklist
+            link.href = canvas.toDataURL('image/png'); // Get image data
+            document.body.appendChild(link); // Add to DOM
+            link.click(); // Simulate click
+            document.body.removeChild(link); // Clean up
+            console.log("Download triggered for checklist.");
+        })
+        .catch(error => {
+             // --- Restore Background (Error) ---
+             // CRITICAL: Always restore the background, even if capture fails!
+             bodyElement.style.backgroundColor = originalBodyBackground;
+
+            console.error('Error capturing checklist:', error);
+            alert('Sorry, could not download the checklist image. An error occurred.');
+        });
+    }
+
+    // --- EVENT LISTENER ---
+    // Hook up the download button click to the download function. Check button exists first.
+    if (downloadButton) {
+        downloadButton.addEventListener('click', downloadChecklistAsPNG);
+    } else {
+        console.error("Download button element not found in the DOM!");
+    }
+
+</script>
+
+</body>
+</html>
