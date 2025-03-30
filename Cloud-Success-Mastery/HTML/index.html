@@ -1,74 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>HTML Demos - Book Resources</title>
+  <meta charset="UTF-8">
+  <title>HTML Visual Gallery</title>
   <style>
     body { font-family: sans-serif; padding: 2rem; }
-    a { color: blue; text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    .modal {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center;
-    }
-    iframe {
-      width: 90vw; height: 90vh; border: none; background: #fff;
-    }
-    .modal-content {
-      position: relative; background: #fff; padding: 1rem;
-    }
-    .close {
-      position: absolute; top: 10px; right: 15px; cursor: pointer;
-      font-size: 1.2rem; font-weight: bold;
-    }
+    li { margin-bottom: 0.5rem; }
+    .modal { display: none; position: fixed; top: 0; left: 0;
+             width: 100%; height: 100%; background: rgba(0,0,0,0.8);
+             justify-content: center; align-items: center; }
+    iframe { width: 80vw; height: 80vh; border: none; }
+    .close { position: absolute; top: 20px; right: 40px; font-size: 2rem; color: white; cursor: pointer; }
   </style>
 </head>
 <body>
-  <h1>📂 Book HTML Visualizations</h1>
-  <ul id="fileList"></ul>
+  <h1>📊 HTML Visuals</h1>
+  <ul id="fileList">
+    <li><a href="#" onclick="openPopup('7 Steps to a World-Class Onboarding Experience.html')">7 Steps to a World-Class Onboarding Experience.html</a></li>
+<li><a href="#" onclick="openPopup('Callout-Generator.html')">Callout-Generator.html</a></li>
+<li><a href="#" onclick="openPopup('Churn Prevention Strategies.html')">Churn Prevention Strategies.html</a></li>
+<li><a href="#" onclick="openPopup('Collaboration Success Story.html')">Collaboration Success Story.html</a></li>
+<li><a href="#" onclick="openPopup('Culture Dos & Don'ts.html')">Culture Dos & Don'ts.html</a></li>
+<li><a href="#" onclick="openPopup('Customer Health Dashboard.html')">Customer Health Dashboard.html</a></li>
+<li><a href="#" onclick="openPopup('Customer Obsession Flywheel.html')">Customer Obsession Flywheel.html</a></li>
+<li><a href="#" onclick="openPopup('Customer Obsession in Action.html')">Customer Obsession in Action.html</a></li>
+<li><a href="#" onclick="openPopup('Customer Segmentation & Action Plan.html')">Customer Segmentation & Action Plan.html</a></li>
+<li><a href="#" onclick="openPopup('Example Customer Success Plan.html')">Example Customer Success Plan.html</a></li>
+<li><a href="#" onclick="openPopup('Fan Metrics Dashboard .html')">Fan Metrics Dashboard .html</a></li>
+<li><a href="#" onclick="openPopup('KPI Dashboard.html')">KPI Dashboard.html</a></li>
+<li><a href="#" onclick="openPopup('Onboarding Success Dashboard.html')">Onboarding Success Dashboard.html</a></li>
+<li><a href="#" onclick="openPopup('Personalization in Action.html')">Personalization in Action.html</a></li>
+<li><a href="#" onclick="openPopup('Real-Life Tip.html')">Real-Life Tip.html</a></li>
+<li><a href="#" onclick="openPopup('Sample CSAT Survey.html')">Sample CSAT Survey.html</a></li>
+<li><a href="#" onclick="openPopup('Small Automation Big Impact.html')">Small Automation Big Impact.html</a></li>
+<li><a href="#" onclick="openPopup('Strategic Expansion Do’s & Don'ts.html')">Strategic Expansion Do’s & Don'ts.html</a></li>
+<li><a href="#" onclick="openPopup('Teamwork in Action.html')">Teamwork in Action.html</a></li>
+<li><a href="#" onclick="openPopup('The Old Way vs. The Cloud Way.html')">The Old Way vs. The Cloud Way.html</a></li>
+<li><a href="#" onclick="openPopup('Traits of a Customer Success Superstar.html')">Traits of a Customer Success Superstar.html</a></li>
+<li><a href="#" onclick="openPopup('Turning Detractors into Promoters.html')">Turning Detractors into Promoters.html</a></li>
+<li><a href="#" onclick="openPopup('Weekly Proactive Engagement Calendar.html')">Weekly Proactive Engagement Calendar.html</a></li>
+  </ul>
 
-  <div class="modal" id="popupModal">
-    <div class="modal-content">
-      <span class="close" onclick="closeModal()">×</span>
-      <iframe id="popupFrame"></iframe>
-    </div>
+  <div class="modal" id="modal">
+    <span class="close" onclick="closePopup()">×</span>
+    <iframe id="modalFrame"></iframe>
   </div>
 
   <script>
-    const htmlFiles = [
-      // manually list your HTML files here
-      "customer-journey-map.html",
-      "support-lifecycle.html",
-      "cloud-success-maturity-model.html"
-    ];
-
-    const fileList = document.getElementById("fileList");
-
-    htmlFiles.forEach(file => {
-      const li = document.createElement("li");
-      const a = document.createElement("a");
-      a.textContent = file;
-      a.href = "#";
-      a.onclick = () => openModal(file);
-      li.appendChild(a);
-      fileList.appendChild(li);
-    });
-
-    function openModal(file) {
-      const modal = document.getElementById("popupModal");
-      const frame = document.getElementById("popupFrame");
-      frame.src = file;
-      modal.style.display = "flex";
+    function openPopup(src) {
+      document.getElementById('modalFrame').src = src;
+      document.getElementById('modal').style.display = 'flex';
     }
-
-    function closeModal() {
-      document.getElementById("popupModal").style.display = "none";
-      document.getElementById("popupFrame").src = "";
+    function closePopup() {
+      document.getElementById('modal').style.display = 'none';
+      document.getElementById('modalFrame').src = '';
     }
-
-    // Optional: Close modal on outside click
-    document.getElementById("popupModal").addEventListener("click", function(e) {
-      if (e.target === this) closeModal();
+    document.getElementById('modal').addEventListener('click', function(e) {
+      if (e.target === this) closePopup();
     });
   </script>
 </body>

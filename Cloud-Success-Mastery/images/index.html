@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Image Visual Gallery</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; }
+    li { margin-bottom: 0.5rem; }
+    .modal { display: none; position: fixed; top: 0; left: 0;
+             width: 100%; height: 100%; background: rgba(0,0,0,0.8);
+             justify-content: center; align-items: center; }
+    iframe { width: 80vw; height: 80vh; border: none; }
+    .close { position: absolute; top: 20px; right: 40px; font-size: 2rem; color: white; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>📊 HTML Visuals</h1>
+  <ul id="fileList">
+    <li><a href="#" onclick="openPopup('Collaboration_Success_Story_From_Silos_to_Superstars.png')">Collaboration_Success_Story_From_Silos_to_Superstars.png</a></li>
+<li><a href="#" onclick="openPopup('Culture_Do's_&_Don'ts.png')">Culture_Do's_&_Don'ts.png</a></li>
+<li><a href="#" onclick="openPopup('Customer_Obsession_in_Action.png')">Customer_Obsession_in_Action.png</a></li>
+<li><a href="#" onclick="openPopup('Customer_Segmentation_&_Action_Plan.png')">Customer_Segmentation_&_Action_Plan.png</a></li>
+<li><a href="#" onclick="openPopup('Customer_Success_Dashboard.png')">Customer_Success_Dashboard.png</a></li>
+<li><a href="#" onclick="openPopup('Example_Customer_Success_Plan.png')">Example_Customer_Success_Plan.png</a></li>
+<li><a href="#" onclick="openPopup('How_satisfied_were_you_with_our_service_today.png')">How_satisfied_were_you_with_our_service_today.png</a></li>
+<li><a href="#" onclick="openPopup('Personalization_in_Action.png')">Personalization_in_Action.png</a></li>
+<li><a href="#" onclick="openPopup('Small_Automation,_Big_Impact.png')">Small_Automation,_Big_Impact.png</a></li>
+<li><a href="#" onclick="openPopup('Teamwork_in_Action_Breaking_Silos_to_Elevate_Custo.png')">Teamwork_in_Action_Breaking_Silos_to_Elevate_Custo.png</a></li>
+<li><a href="#" onclick="openPopup('The_Old_Way_vs._The_Cloud_Way.png')">The_Old_Way_vs._The_Cloud_Way.png</a></li>
+<li><a href="#" onclick="openPopup('Traits_of_a_Customer_Success_Superstar.png')">Traits_of_a_Customer_Success_Superstar.png</a></li>
+<li><a href="#" onclick="openPopup('Turning_Detractors_into_Promoters.png')">Turning_Detractors_into_Promoters.png</a></li>
+<li><a href="#" onclick="openPopup('Weekly_Proactive_Engagement_Calendar.png')">Weekly_Proactive_Engagement_Calendar.png</a></li>
+<li><a href="#" onclick="openPopup('churn_prevention_strategies.png')">churn_prevention_strategies.png</a></li>
+<li><a href="#" onclick="openPopup('customer_health_dashboard.png')">customer_health_dashboard.png</a></li>
+<li><a href="#" onclick="openPopup('customer_obsession_flywheel.png')">customer_obsession_flywheel.png</a></li>
+<li><a href="#" onclick="openPopup('expansion_dos_donts.png')">expansion_dos_donts.png</a></li>
+<li><a href="#" onclick="openPopup('fan_metrics_dashboard.png')">fan_metrics_dashboard.png</a></li>
+<li><a href="#" onclick="openPopup('onboarding_checklist.png')">onboarding_checklist.png</a></li>
+<li><a href="#" onclick="openPopup('onboarding_success_dashboard.png')">onboarding_success_dashboard.png</a></li>
+  </ul>
+
+  <div class="modal" id="modal">
+    <span class="close" onclick="closePopup()">×</span>
+    <iframe id="modalFrame"></iframe>
+  </div>
+
+  <script>
+    function openPopup(src) {
+      document.getElementById('modalFrame').src = src;
+      document.getElementById('modal').style.display = 'flex';
+    }
+    function closePopup() {
+      document.getElementById('modal').style.display = 'none';
+      document.getElementById('modalFrame').src = '';
+    }
+    document.getElementById('modal').addEventListener('click', function(e) {
+      if (e.target === this) closePopup();
+    });
+  </script>
+</body>
+</html>
